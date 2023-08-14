@@ -82,13 +82,13 @@ confluentinc/cp-zookeeper  7.3.2            6fe5551964f5   7 years ago     451MB
 #### 3. Создать volume для сохранения данных из БД в docker на вашем компьютере
 
 ```posh
-docker volume create pgdata
+docker volume create niffler-st3
 ```
 
 #### 4. Запустить БД, zookeeper и kafka 4-мя последовательными командами:
 
 ```posh
-docker run --name niffler-all -p 5432:5432 -e POSTGRES_PASSWORD=secret -v pgdata:/var/lib/postgresql/data -d postgres:15.1
+docker run --name niffler-all -p 5432:5432 -e POSTGRES_PASSWORD=secret -v niffler-st3:/var/lib/postgresql/data -d postgres:15.1
 
 docker run --name=zookeeper -e ZOOKEEPER_CLIENT_PORT=2181 -e ZOOKEEPER_TICK_TIME=2000 -p 2181:2181 -d confluentinc/cp-zookeeper:7.3.2
 
