@@ -14,6 +14,6 @@ public @interface Category {
 
     String username();
 
-    String description();
 
+    String category();
 }
