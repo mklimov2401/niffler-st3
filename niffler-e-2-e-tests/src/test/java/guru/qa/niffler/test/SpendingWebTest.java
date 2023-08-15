@@ -16,6 +16,12 @@ import static com.codeborne.selenide.Selenide.$;
 
 public class SpendingWebTest {
 
+    private final String USERNAME = "Misha";
+    private final String PASSWORD = "123456";
+    private final String CATEGORY = "Рыбалка";
+    private final String DESCRIPTION = "Рыбалка на Ладоге";
+    private final double AMOUNT = 14000.00;
+
     static {
         Configuration.browser = "chrome";
         Configuration.browserSize = "1980x1024";
@@ -25,20 +31,20 @@ public class SpendingWebTest {
     void doLogin() {
         Selenide.open("http://127.0.0.1:3000/main");
         $("a[href*='redirect']").click();
-        $("input[name='username']").setValue("Misha");
-        $("input[name='password']").setValue("123456");
+        $("input[name='username']").setValue(USERNAME);
+        $("input[name='password']").setValue(PASSWORD);
         $("button[type='submit']").click();
     }
 
     @Category(
-            username = "Misha",
-            description = "Рыбалка"
+            username = USERNAME,
+            category = CATEGORY
     )
     @Spend(
-            username = "Misha",
-            description = "Рыбалка на Ладоге",
-            category = "Рыбалка",
-            amount = 14000.00,
+            username = USERNAME,
+            description = DESCRIPTION,
+            category = CATEGORY,
+            amount = AMOUNT,
             currency = CurrencyValues.RUB
     )
     @Test

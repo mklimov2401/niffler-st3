@@ -25,7 +25,7 @@ public class CategoryExtension implements BeforeEachCallback {
         if (annotation != null) {
             CategoryJson category = new CategoryJson();
             category.setUsername(annotation.username());
-            category.setCategory(annotation.description());
+            category.setCategory(annotation.category());
             categoryService.addCategory(category).execute();
         }
     }
