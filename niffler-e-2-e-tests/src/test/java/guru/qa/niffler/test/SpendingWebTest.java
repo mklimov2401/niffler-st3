@@ -1,11 +1,11 @@
 package guru.qa.niffler.test;
 
-import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
 import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.jupiter.annotation.Spend;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.SpendJson;
+import io.qameta.allure.Allure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,18 +14,14 @@ import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.$;
 
-public class SpendingWebTest {
+public class SpendingWebTest extends BaseWebTest {
 
-    private final String USERNAME = "Misha";
+    private final String USERNAME = "misha";
     private final String PASSWORD = "123456";
     private final String CATEGORY = "Рыбалка";
     private final String DESCRIPTION = "Рыбалка на Ладоге";
     private final double AMOUNT = 14000.00;
 
-    static {
-        Configuration.browser = "chrome";
-        Configuration.browserSize = "1980x1024";
-    }
 
     @BeforeEach
     void doLogin() {
@@ -57,10 +53,11 @@ public class SpendingWebTest {
                 .scrollTo()
                 .click();
 
-        $(byText("Delete selected")).click();
+        Allure.step("Delete spending", () ->
+                $(byText("Delete selected")).click());
 
-        $(".spendings__content tbody")
+        Allure.step("Check spending", () -> $(".spendings__content tbody")
                 .$$("tr")
-                .shouldHave(size(0));
+                .shouldHave(size(0)));
     }
 }
