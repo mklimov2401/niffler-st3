@@ -1,15 +1,14 @@
 package guru.qa.niffler.test;
 
-
 import com.codeborne.selenide.Selenide;
-import guru.qa.niffler.jupiter.User;
+import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.model.UserJson;
 import io.qameta.allure.AllureId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static com.codeborne.selenide.Selenide.$;
-import static guru.qa.niffler.jupiter.User.UserType.WITH_FRIENDS;
+import static guru.qa.niffler.jupiter.annotation.User.UserType.WITH_FRIENDS;
 
 public class FriendsWebTest extends BaseWebTest {
 
@@ -22,21 +21,27 @@ public class FriendsWebTest extends BaseWebTest {
         $("button[type='submit']").click();
     }
 
+
     @Test
     @AllureId("101")
-    void friendShouldBeDisplayedInTable0(@User(userType = WITH_FRIENDS) UserJson userForTest) throws InterruptedException {
+    void friendShouldBeDisplayedInTable1(@User(userType = WITH_FRIENDS) UserJson userForTest) throws InterruptedException {
         Thread.sleep(3000);
+        System.out.println();
     }
 
     @Test
     @AllureId("102")
-    void friendShouldBeDisplayedInTable1(@User(userType = WITH_FRIENDS) UserJson userForTest) throws InterruptedException {
+    void friendShouldBeDisplayedInTable2(@User(userType = WITH_FRIENDS) UserJson userForTest) throws InterruptedException {
         Thread.sleep(3000);
+        System.out.println();
     }
 
     @Test
     @AllureId("103")
-    void friendShouldBeDisplayedInTable2(@User(userType = WITH_FRIENDS) UserJson userForTest) throws InterruptedException {
+    void friendShouldBeDisplayedInTable3(@User(userType = WITH_FRIENDS) UserJson userForTest) throws InterruptedException {
         Thread.sleep(3000);
+        System.out.println();
     }
+
+
 }

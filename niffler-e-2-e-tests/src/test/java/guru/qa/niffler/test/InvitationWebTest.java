@@ -1,4 +1,4 @@
 package guru.qa.niffler.test;
 
-public class InvitationWebTest {
+public class InvitationWebTest extends BaseWebTest {
 }
