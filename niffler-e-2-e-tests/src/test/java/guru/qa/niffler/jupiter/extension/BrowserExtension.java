@@ -25,6 +25,7 @@ public class BrowserExtension implements BeforeAllCallback, AfterEachCallback, T
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
         if (WebDriverRunner.hasWebDriverStarted()) {
+            Selenide.closeWindow();
             Selenide.closeWebDriver();
         }
     }
@@ -36,5 +37,6 @@ public class BrowserExtension implements BeforeAllCallback, AfterEachCallback, T
                     ((TakesScreenshot) WebDriverRunner.getWebDriver()).getScreenshotAs(OutputType.BYTES)
             ));
         }
+        throw throwable;
     }
 }
