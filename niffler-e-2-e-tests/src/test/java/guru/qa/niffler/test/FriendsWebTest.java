@@ -10,21 +10,24 @@ import org.junit.jupiter.api.Test;
 
 import static guru.qa.niffler.jupiter.annotation.User.UserType.WITH_FRIENDS;
 
+
 public class FriendsWebTest extends BaseWebTest {
+
+    NavigationPage navigationPage = new NavigationPage();
+    FriendsPage friendsPage = new FriendsPage();
 
     @BeforeEach
     void doLogin(@User(userType = WITH_FRIENDS) UserJson userForTest) {
-        new LoginPage().signIn(userForTest);
+        loginPage.signIn(userForTest);
     }
 
 
     @Test
-    void friendShouldBeDisplayedInTable(@User(userType = WITH_FRIENDS) UserJson userForTest) {
-        FriendsPage friendsPage = new NavigationPage()
-                .currentUserDisplayInReport(userForTest)
-                .goToFriends();
+    //кейс когда у нас два пользователя с типом друзья и проверка, что они друг у друга в друзьях
+    void friendShouldBeDisplayedInTable(@User(userType = WITH_FRIENDS) UserJson anotherUserForTest) {
+        friendsPage = navigationPage.goToFriends();
         friendsPage.checkingThatListExist();
-        friendsPage.checkingYouFriends();
+        friendsPage.checkingYouFriends(anotherUserForTest.getUsername());
     }
 
 
