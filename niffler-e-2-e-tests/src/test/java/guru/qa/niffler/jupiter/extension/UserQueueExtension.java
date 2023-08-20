@@ -2,13 +2,12 @@ package guru.qa.niffler.jupiter.extension;
 
 import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.model.UserJson;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -37,52 +36,18 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
     }
 
     @Override
-    public void beforeEach(ExtensionContext context){
-        Method[] methods = context.getRequiredTestClass().getDeclaredMethods();
-        for (Method method : methods) {
-            Parameter[] parameters = method.getParameters();
-            for (Parameter parameter : parameters) {
-                if (parameter.getType().isAssignableFrom(UserJson.class)
-                        && parameter.isAnnotationPresent(User.class)) {
-                    User parameterAnnotation = parameter.getAnnotation(User.class);
-                    Queue<UserJson> userQueueByType = usersQueue.get(parameterAnnotation.userType());
-                    UserJson candidateForTest = null;
-                    while (Objects.isNull(candidateForTest)) {
-                        if (Objects.isNull(context.getStore(NAMESPACE).get(parameterAnnotation.userType()))) {
-                            candidateForTest = userQueueByType.poll();
-                            if (Objects.nonNull(candidateForTest)) {
-                                candidateForTest.setUserType(parameterAnnotation.userType());
-                                context.getStore(NAMESPACE).put(candidateForTest.getUserType(), candidateForTest);
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-
-                }
-            }
-        }
+    public void beforeEach(ExtensionContext context) {
+        Optional<Method> beforeEach = findBeforeEach(context);
+        beforeEach.ifPresent(method -> fillStoreContextCreated(context, method));
+        fillStoreContextCreated(context, context.getRequiredTestMethod());
     }
+
 
     @Override
     public void afterTestExecution(ExtensionContext context) {
-        Method[] methods = context.getRequiredTestClass().getDeclaredMethods();
-        for (Method method : methods) {
-            Parameter[] parameters = method.getParameters();
-            for (Parameter parameter : parameters) {
-                if (parameter.getType().isAssignableFrom(UserJson.class)
-                        && parameter.isAnnotationPresent(User.class)) {
-                    User parameterAnnotation = parameter.getAnnotation(User.class);
-                    if (Objects.nonNull(context.getStore(NAMESPACE).get(parameterAnnotation.userType()))) {
-                        UserJson userFromTest = context.getStore(NAMESPACE)
-                                .get(parameterAnnotation.userType(), UserJson.class);
-                        context.getStore(NAMESPACE).remove(parameterAnnotation.userType());
-                        Queue<UserJson> userQueue = usersQueue.get(userFromTest.getUserType());
-                        userQueue.add(userFromTest);
-                    }
-                }
-            }
-        }
+        Optional<Method> beforeEach = findBeforeEach(context);
+        beforeEach.ifPresent(method -> fillStoreContextDeleted(context, method));
+        fillStoreContextDeleted(context, context.getRequiredTestMethod());
     }
 
     @Override
@@ -94,10 +59,63 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
 
     @Override
     public UserJson resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        if (Objects.nonNull(parameterContext.getParameter().getDeclaringExecutable()
+                .getAnnotation(BeforeEach.class))) {
+            Optional<Method> beforeEach = findBeforeEach(extensionContext);
+            if (beforeEach.isPresent()) {
+                return extensionContext.getStore(NAMESPACE)
+                        .get(getUniqueId(extensionContext, beforeEach.get(), parameterContext.getParameter()), UserJson.class);
+            }
+        }
         return extensionContext.getStore(NAMESPACE)
-                .get(parameterContext.getParameter().getAnnotation(User.class).userType(), UserJson.class);
+                .get(getUniqueId(extensionContext, extensionContext.getRequiredTestMethod(),
+                        parameterContext.getParameter()), UserJson.class);
     }
 
+
+    public static void fillStoreContextCreated(ExtensionContext context, Method method){
+        Arrays.stream(method.getParameters())
+                .filter(parameter -> parameter.isAnnotationPresent(User.class)
+                        && parameter.getType().isAssignableFrom(UserJson.class))
+                .forEach(parameter -> {
+                    User parameterAnnotation = parameter.getAnnotation(User.class);
+                    Queue<UserJson> usersQueueByType = usersQueue.get(parameterAnnotation.userType());
+                    UserJson candidateForTest = null;
+                    while (Objects.isNull(candidateForTest)) {
+                        candidateForTest = usersQueueByType.poll();
+                    }
+                    candidateForTest.setUserType(parameterAnnotation.userType());
+                    context.getStore(NAMESPACE).put(getUniqueId(context, method, parameter), candidateForTest);
+                });
+    }
+
+    public static void fillStoreContextDeleted(ExtensionContext context, Method method){
+        Arrays.stream(method.getParameters())
+                .filter(parameter -> parameter.isAnnotationPresent(User.class)
+                        && parameter.getType().isAssignableFrom(UserJson.class))
+                .forEach(parameter -> {
+                    UserJson userFromTest = context.getStore(NAMESPACE)
+                            .get(getUniqueId(context, method, parameter), UserJson.class);
+                    if (Objects.nonNull(userFromTest)) {
+                        context.getStore(NAMESPACE).remove(getUniqueId(context, method, parameter));
+                        Queue<UserJson> userQueue = usersQueue.get(userFromTest.getUserType());
+                        userQueue.add(userFromTest);
+                    }
+                });
+    }
+
+    private static String getUniqueId(ExtensionContext context, Method method, Parameter parameter) {
+        return new StringJoiner("_")
+                .add(context.getUniqueId())
+                .add(method.getName())
+                .add(parameter.getName()).toString();
+    }
+
+    private static Optional<Method> findBeforeEach(ExtensionContext context) {
+        return Arrays.stream(context.getRequiredTestClass().getDeclaredMethods())
+                .filter(method -> method.isAnnotationPresent(BeforeEach.class))
+                .findFirst();
+    }
 
     private static UserJson bindUser(String username, String password) {
         UserJson user = new UserJson();

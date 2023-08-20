@@ -2,9 +2,9 @@ package guru.qa.niffler.page;
 
 import com.codeborne.selenide.Selenide;
 import guru.qa.niffler.model.UserJson;
-import io.qameta.allure.Allure;
 
 import static com.codeborne.selenide.Selenide.$;
+import static io.qameta.allure.Allure.*;
 
 public class LoginPage {
     public void signIn(UserJson userForTest) {
@@ -16,10 +16,10 @@ public class LoginPage {
     }
 
     private void login(String username, String password) {
-        Allure.step("Open welcome page", () -> Selenide.open("http://127.0.0.1:3000/main"));
-        Allure.step("Go to login page", () -> $("a[href*='redirect']").click());
-        Allure.step("Enter username", () -> $("input[name='username']").setValue(username));
-        Allure.step("Enter password", () -> $("input[name='password']").setValue(password));
-        Allure.step("Click submit", () -> $("button[type='submit']").click());
+        step("Open welcome page", () -> Selenide.open("http://127.0.0.1:3000/main"));
+        step("Go to login page", () -> $("a[href*='redirect']").click());
+        step("Enter username", () -> $("input[name='username']").setValue(username));
+        step("Enter password", () -> $("input[name='password']").setValue(password));
+        step("Click submit", () -> $("button[type='submit']").click());
     }
 }

@@ -7,11 +7,12 @@ import static com.codeborne.selenide.CollectionCondition.size;
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.$;
+import static io.qameta.allure.Allure.*;
 
 public class MainPage {
 
     public MainPage findSpend(SpendJson spend){
-        Allure.step("Find spend", () ->
+        step("Find spend", () ->
                 $(".spendings__content tbody")
                         .$$("tr")
                         .find(text(spend.getDescription()))
@@ -23,13 +24,13 @@ public class MainPage {
     }
 
     public MainPage deleteSpend(){
-        Allure.step("Delete spend", () ->
+        step("Delete spend", () ->
                 $(byText("Delete selected")).click());
         return this;
     }
 
     public MainPage checkDeleteSpend(){
-        Allure.step("Checking delete spend", () ->
+        step("Checking delete spend", () ->
                 $(".spendings__content tbody")
                         .$$("tr")
                         .shouldHave(size(0)));

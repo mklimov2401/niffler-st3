@@ -9,36 +9,37 @@ import guru.qa.niffler.page.NavigationPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static guru.qa.niffler.jupiter.annotation.User.UserType.INVITATION_RECEIVED;
+import static guru.qa.niffler.jupiter.annotation.User.UserType.*;
 
 public class InvitationReceivedWebTest extends BaseWebTest {
 
+    NavigationPage navigationPage = new NavigationPage();
+    FriendsPage friendsPage = new FriendsPage();
+    AllPeoplePage peoplePage = new AllPeoplePage();
+
     @BeforeEach
     void doLogin(@User(userType = INVITATION_RECEIVED) UserJson userForTest) {
-        new LoginPage().signIn(userForTest);
+        loginPage.signIn(userForTest);
     }
 
     @Test
-    void invitationReceivedShouldBeDisplayedInTableFriends(@User(userType = INVITATION_RECEIVED) UserJson userForTest) {
-        FriendsPage friendsPage = new NavigationPage()
-                .currentUserDisplayInReport(userForTest)
+    void invitationReceivedShouldBeDisplayedInTableFriends() {
+        friendsPage = navigationPage
                 .goToFriends();
         friendsPage.checkingThatListExist();
         friendsPage.checkingInvitationReceived();
     }
 
     @Test
-    void invitationReceivedShouldBeDisplayedInTableSubmitInvited(@User(userType = INVITATION_RECEIVED) UserJson userForTest) {
-        AllPeoplePage peoplePage = new NavigationPage()
-                .currentUserDisplayInReport(userForTest)
+    void invitationReceivedShouldBeDisplayedInTableSubmitInvited() {
+        peoplePage = navigationPage
                 .goToAllPeople();
         peoplePage.checkingDisplayedSubmitInvitation();
     }
 
     @Test
-    void invitationReceivedShouldBeDisplayedInTableSubmitDeclined(@User(userType = INVITATION_RECEIVED) UserJson userForTest) {
-        AllPeoplePage peoplePage = new NavigationPage()
-                .currentUserDisplayInReport(userForTest)
+    void invitationReceivedShouldBeDisplayedInTableSubmitDeclined() {
+        peoplePage = navigationPage
                 .goToAllPeople();
         peoplePage.checkingDisplayedSubmitDeclined();
     }
