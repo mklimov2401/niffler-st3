@@ -1,56 +1,44 @@
 package guru.qa.niffler.test;
 
-import com.codeborne.selenide.Configuration;
-import com.codeborne.selenide.Selenide;
-import guru.qa.niffler.jupiter.Spend;
+import guru.qa.niffler.jupiter.annotation.Category;
+import guru.qa.niffler.jupiter.annotation.Spend;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.SpendJson;
+import guru.qa.niffler.page.LoginPage;
+import guru.qa.niffler.page.MainPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static com.codeborne.selenide.CollectionCondition.size;
-import static com.codeborne.selenide.Condition.text;
-import static com.codeborne.selenide.Selectors.byText;
-import static com.codeborne.selenide.Selenide.$;
+public class SpendingWebTest extends BaseWebTest {
 
-public class SpendingWebTest {
+    private final String USERNAME = "dima";
+    private final String PASSWORD = "123456";
+    private final String CATEGORY = "Рыбалка";
+    private final String DESCRIPTION = "Рыбалка на Ладоге";
+    private final double AMOUNT = 14000.00;
 
-    static {
-        Configuration.browser = "chrome";
-        Configuration.browserSize = "1980x1024";
-    }
 
     @BeforeEach
     void doLogin() {
-        Selenide.open("http://127.0.0.1:3000/main");
-        $("a[href*='redirect']").click();
-        $("input[name='username']").setValue("Misha");
-        $("input[name='password']").setValue("123456");
-        $("button[type='submit']").click();
+        new LoginPage().signIn(USERNAME, PASSWORD);
     }
 
-
+    @Category(
+            username = USERNAME,
+            category = CATEGORY
+    )
     @Spend(
-            username = "Misha",
-            description = "Рыбалка на Ладоге",
-            category = "Рыбалка",
-            amount = 14000.00,
+            username = USERNAME,
+            description = DESCRIPTION,
+            category = CATEGORY,
+            amount = AMOUNT,
             currency = CurrencyValues.RUB
     )
     @Test
     void spendingShouldBeDeletedAfterDeleteAction(SpendJson createdSpend) {
-        $(".spendings__content tbody")
-                .$$("tr")
-                .find(text(createdSpend.getDescription()))
-                .$$("td")
-                .first()
-                .scrollTo()
-                .click();
-
-        $(byText("Delete selected")).click();
-
-        $(".spendings__content tbody")
-                .$$("tr")
-                .shouldHave(size(0));
+        new MainPage()
+                .findSpend(createdSpend)
+                .deleteSpend()
+                .checkDeleteSpend();
     }
 }
