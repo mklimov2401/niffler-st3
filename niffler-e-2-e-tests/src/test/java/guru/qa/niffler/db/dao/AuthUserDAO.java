@@ -10,7 +10,10 @@ public interface AuthUserDAO {
 
     PasswordEncoder pe = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
-    int createUser(UserEntity user);
-
+    UUID createUser(UserEntity user);
     void deleteUserById(UUID userId);
+    void updateUser(UserEntity user);
+    UserEntity getUser(UUID userId);
+    UserEntity getUser(String username);
+
 }
