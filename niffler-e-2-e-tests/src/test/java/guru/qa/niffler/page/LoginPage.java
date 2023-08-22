@@ -1,9 +1,11 @@
 package guru.qa.niffler.page;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selenide;
 import guru.qa.niffler.model.UserJson;
 import io.qameta.allure.Allure;
 
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
 
 public class LoginPage {
@@ -21,5 +23,6 @@ public class LoginPage {
         Allure.step("Enter username", () -> $("input[name='username']").setValue(username));
         Allure.step("Enter password", () -> $("input[name='password']").setValue(password));
         Allure.step("Click submit", () -> $("button[type='submit']").click());
+        Allure.step("Check open Main page", () -> $(".main-content__section-stats").should(visible));
     }
 }
