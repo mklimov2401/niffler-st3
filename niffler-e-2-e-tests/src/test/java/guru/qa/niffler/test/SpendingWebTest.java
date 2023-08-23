@@ -7,6 +7,7 @@ import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.MainPage;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class SpendingWebTest extends BaseWebTest {
@@ -17,10 +18,13 @@ public class SpendingWebTest extends BaseWebTest {
     private final String DESCRIPTION = "Рыбалка на Ладоге";
     private final double AMOUNT = 14000.00;
 
+    MainPage mainPage = new MainPage();
+    LoginPage loginPage = new LoginPage();
+
 
     @BeforeEach
     void doLogin() {
-        new LoginPage().signIn(USERNAME, PASSWORD);
+        loginPage.signIn(USERNAME, PASSWORD);
     }
 
     @Category(
@@ -36,7 +40,7 @@ public class SpendingWebTest extends BaseWebTest {
     )
     @Test
     void spendingShouldBeDeletedAfterDeleteAction(SpendJson createdSpend) {
-        new MainPage()
+        mainPage
                 .findSpend(createdSpend)
                 .deleteSpend()
                 .checkDeleteSpend();
