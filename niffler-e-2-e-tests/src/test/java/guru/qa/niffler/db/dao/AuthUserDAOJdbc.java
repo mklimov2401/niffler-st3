@@ -2,9 +2,7 @@ package guru.qa.niffler.db.dao;
 
 import guru.qa.niffler.db.DataSourceProvider;
 import guru.qa.niffler.db.ServiceDB;
-import guru.qa.niffler.db.model.Authority;
-import guru.qa.niffler.db.model.CurrencyValues;
-import guru.qa.niffler.db.model.UserEntity;
+import guru.qa.niffler.db.model.*;
 import guru.qa.niffler.model.UserJson;
 
 import javax.sql.DataSource;
@@ -12,9 +10,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
-
-import static guru.qa.niffler.model.CurrencyValues.convertToEnum;
 
 public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
 
@@ -110,18 +109,17 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
         try (Connection conn = authDs.getConnection()) {
             try (PreparedStatement usersPs = conn.prepareStatement(
                     "UPDATE  users " +
-                            "SET id = ?, username = ?, password = ?, enabled = ?, account_non_expired = ?, " +
+                            "SET id = ?, password = ?, enabled = ?, account_non_expired = ?, " +
                             " account_non_locked = ? , credentials_non_expired = ? " +
                             "WHERE id = ? ")) {
 
                 usersPs.setObject(1, user.getId());
-                usersPs.setString(2, user.getUsername());
-                usersPs.setString(3, pe.encode(user.getPassword()));
-                usersPs.setBoolean(4, user.getEnabled());
-                usersPs.setBoolean(5, user.getAccountNonExpired());
-                usersPs.setBoolean(6, user.getAccountNonLocked());
-                usersPs.setBoolean(7, user.getCredentialsNonExpired());
-                usersPs.setObject(8, user.getId());
+                usersPs.setString(2, pe.encode(user.getPassword()));
+                usersPs.setBoolean(3, user.getEnabled());
+                usersPs.setBoolean(4, user.getAccountNonExpired());
+                usersPs.setBoolean(5, user.getAccountNonLocked());
+                usersPs.setBoolean(6, user.getCredentialsNonExpired());
+                usersPs.setObject(7, user.getId());
 
                 usersPs.executeUpdate();
             }
@@ -141,16 +139,16 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
                 usersPs.setObject(1, userId);
 
                 usersPs.execute();
-                ResultSet resultSet = usersPs.getResultSet();
+                ResultSet rs = usersPs.getResultSet();
 
-                while (resultSet.next()){
-                    user.setId(resultSet.getObject("id", UUID.class));
-                    user.setUsername(resultSet.getString("username"));
-                    user.setPassword(resultSet.getString("password"));
-                    user.setEnabled(resultSet.getBoolean("enabled"));
-                    user.setAccountNonExpired(resultSet.getBoolean("account_non_expired"));
-                    user.setAccountNonLocked(resultSet.getBoolean("account_non_locked"));
-                    user.setCredentialsNonExpired(resultSet.getBoolean("credentials_non_expired"));
+                while (rs.next()) {
+                    user.setId(rs.getObject("id", UUID.class));
+                    user.setUsername(rs.getString("username"));
+                    user.setPassword(rs.getString("password"));
+                    user.setEnabled(rs.getBoolean("enabled"));
+                    user.setAccountNonExpired(rs.getBoolean("account_non_expired"));
+                    user.setAccountNonLocked(rs.getBoolean("account_non_locked"));
+                    user.setCredentialsNonExpired(rs.getBoolean("credentials_non_expired"));
                 }
             }
         } catch (SQLException e) {
@@ -170,16 +168,35 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
                 usersPs.setString(1, username);
 
                 usersPs.execute();
-                ResultSet resultSet = usersPs.getResultSet();
+                ResultSet rs = usersPs.getResultSet();
 
-                while (resultSet.next()){
-                    user.setId(resultSet.getObject("id", UUID.class));
-                    user.setUsername(resultSet.getString("username"));
-                    user.setPassword(resultSet.getString("password"));
-                    user.setEnabled(resultSet.getBoolean("enabled"));
-                    user.setAccountNonExpired(resultSet.getBoolean("account_non_expired"));
-                    user.setAccountNonLocked(resultSet.getBoolean("account_non_locked"));
-                    user.setCredentialsNonExpired(resultSet.getBoolean("credentials_non_expired"));
+                while (rs.next()) {
+                    user.setId(rs.getObject("id", UUID.class));
+                    user.setUsername(rs.getString("username"));
+                    user.setPassword(rs.getString("password"));
+                    user.setEnabled(rs.getBoolean("enabled"));
+                    user.setAccountNonExpired(rs.getBoolean("account_non_expired"));
+                    user.setAccountNonLocked(rs.getBoolean("account_non_locked"));
+                    user.setCredentialsNonExpired(rs.getBoolean("credentials_non_expired"));
+                }
+            }
+            try (PreparedStatement authPs = conn.prepareStatement(
+                    "select * from authorities a " +
+                            "where user_id = ?")) {
+                if (Objects.nonNull(user.getId())) {
+                    authPs.setObject(1, user.getId());
+                    authPs.execute();
+                    ResultSet rs = authPs.getResultSet();
+
+                    List<AuthorityEntity> authorityEntityList = new ArrayList<>();
+                    while (rs.next()) {
+                        AuthorityEntity ae = new AuthorityEntity();
+                        ae.setId(rs.getObject("id", UUID.class));
+                        ae.setAuthority(Authority.valueOf(rs.getString("authority")));
+                        authorityEntityList.add(ae);
+                    }
+
+                    user.setAuthorities(authorityEntityList);
                 }
             }
         } catch (SQLException e) {
@@ -241,8 +258,8 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
     }
 
     @Override
-    public UserJson getUserData(String username) {
-        UserJson user = new UserJson();
+    public UserDataEntity getUserData(String username) {
+        UserDataEntity user = new UserDataEntity();
         try (Connection conn = userdataDs.getConnection()) {
             try (PreparedStatement usersPs = conn.prepareStatement(
                     "SELECT * FROM users " +
@@ -251,16 +268,16 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
                 usersPs.setString(1, username);
 
                 usersPs.execute();
-                ResultSet resultSet = usersPs.getResultSet();
+                ResultSet rs = usersPs.getResultSet();
 
-                while (resultSet.next()){
-                    user.setId(resultSet.getObject("id", UUID.class));
-                    user.setUsername(resultSet.getString("username"));
-                    String currency = resultSet.getString("currency");
-                    user.setCurrency(convertToEnum(currency));
-                    user.setFirstname(resultSet.getString("firstname"));
-                    user.setSurname(resultSet.getString("surname"));
-                    user.setPhoto(resultSet.getString("photo"));
+                while (rs.next()) {
+                    user.setId(rs.getObject("id", UUID.class));
+                    user.setUsername(rs.getString("username"));
+                    user.setCurrency(CurrencyValues.valueOf(rs.getString("currency")));
+                    user.setFirstname(rs.getString("firstname"));
+                    user.setSurname(rs.getString("surname"));
+                    String photo = rs.getString("photo");
+                    user.setPhoto(photo != null ? photo.getBytes() : null);
                 }
             }
         } catch (SQLException e) {
