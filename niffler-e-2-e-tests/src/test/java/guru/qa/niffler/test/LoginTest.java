@@ -33,7 +33,7 @@ public class LoginTest extends BaseWebTest {
     @BeforeEach
     void createUser() {
         user = new UserEntity();
-        user.setUsername("valentin_5");
+        user.setUsername("valentin_6");
         user.setPassword("12345");
         user.setEnabled(true);
         user.setAccountNonExpired(true);

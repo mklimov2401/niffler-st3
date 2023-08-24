@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 public class SpendingWebTest extends BaseWebTest {
 
     private final String USERNAME = "dima";
-    private final String PASSWORD = "123456";
+    private final String PASSWORD = "12345";
     private final String CATEGORY = "Рыбалка";
     private final String DESCRIPTION = "Рыбалка на Ладоге";
     private final double AMOUNT = 14000.00;

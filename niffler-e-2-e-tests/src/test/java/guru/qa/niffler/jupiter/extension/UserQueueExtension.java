@@ -22,16 +22,16 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
 
     static {
         Queue<UserJson> usersWithFriends = new ConcurrentLinkedQueue<>();
-        usersWithFriends.add(bindUser("misha", "123456"));
-        usersWithFriends.add(bindUser("barsik", "123456"));
+        usersWithFriends.add(bindUser("misha", "12345"));
+        usersWithFriends.add(bindUser("barsik", "12345"));
         usersQueue.put(WITH_FRIENDS, usersWithFriends);
         Queue<UserJson> usersInSent = new ConcurrentLinkedQueue<>();
-        usersInSent.add(bindUser("bee", "123456"));
-        usersInSent.add(bindUser("anna", "123456"));
+        usersInSent.add(bindUser("bee", "12345"));
+        usersInSent.add(bindUser("anna", "12345"));
         usersQueue.put(INVITATION_SENT, usersInSent);
         Queue<UserJson> usersInReceived = new ConcurrentLinkedQueue<>();
-        usersInReceived.add(bindUser("valentin", "123456"));
-        usersInReceived.add(bindUser("pizlly", "123456"));
+        usersInReceived.add(bindUser("valentin", "12345"));
+        usersInReceived.add(bindUser("pizlly", "12345"));
         usersQueue.put(INVITATION_RECEIVED, usersInReceived);
     }
 
