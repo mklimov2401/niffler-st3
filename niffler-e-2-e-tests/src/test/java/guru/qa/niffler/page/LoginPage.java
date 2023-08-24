@@ -1,8 +1,10 @@
 package guru.qa.niffler.page;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selenide;
 import guru.qa.niffler.model.UserJson;
 
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
 import static io.qameta.allure.Allure.*;
 
