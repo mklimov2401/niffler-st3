@@ -73,7 +73,7 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
     }
 
 
-    public static void fillStoreContextCreated(ExtensionContext context, Method method){
+    private static void fillStoreContextCreated(ExtensionContext context, Method method){
         Arrays.stream(method.getParameters())
                 .filter(parameter -> parameter.isAnnotationPresent(User.class)
                         && parameter.getType().isAssignableFrom(UserJson.class))
@@ -89,7 +89,7 @@ public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutio
                 });
     }
 
-    public static void fillStoreContextDeleted(ExtensionContext context, Method method){
+    private static void fillStoreContextDeleted(ExtensionContext context, Method method){
         Arrays.stream(method.getParameters())
                 .filter(parameter -> parameter.isAnnotationPresent(User.class)
                         && parameter.getType().isAssignableFrom(UserJson.class))
