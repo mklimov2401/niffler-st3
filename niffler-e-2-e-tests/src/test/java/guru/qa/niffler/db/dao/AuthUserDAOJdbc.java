@@ -3,7 +3,6 @@ package guru.qa.niffler.db.dao;
 import guru.qa.niffler.db.DataSourceProvider;
 import guru.qa.niffler.db.ServiceDB;
 import guru.qa.niffler.db.model.*;
-import guru.qa.niffler.model.UserJson;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -129,7 +128,7 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
     }
 
     @Override
-    public UserEntity getUser(UUID userId) {
+    public UserEntity getUserById(UUID userId) {
         UserEntity user = new UserEntity();
         try (Connection conn = authDs.getConnection()) {
             try (PreparedStatement usersPs = conn.prepareStatement(
@@ -151,14 +150,35 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
                     user.setCredentialsNonExpired(rs.getBoolean("credentials_non_expired"));
                 }
             }
+            try (PreparedStatement authPs = conn.prepareStatement(
+                    "select * from authorities a " +
+                            "where user_id = ?")) {
+                if (Objects.nonNull(user.getId())) {
+                    authPs.setObject(1, user.getId());
+                    authPs.execute();
+                    ResultSet rs = authPs.getResultSet();
+
+                    List<AuthorityEntity> authorityEntityList = new ArrayList<>();
+                    while (rs.next()) {
+                        AuthorityEntity ae = new AuthorityEntity();
+                        ae.setId(rs.getObject("id", UUID.class));
+                        ae.setAuthority(Authority.valueOf(rs.getString("authority")));
+                        ae.setUser(user);
+                        authorityEntityList.add(ae);
+                    }
+
+                    user.setAuthorities(authorityEntityList);
+                }
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return user;
     }
 
+
     @Override
-    public UserEntity getUser(String username) {
+    public UserEntity getUserByName(String username) {
         UserEntity user = new UserEntity();
         try (Connection conn = authDs.getConnection()) {
             try (PreparedStatement usersPs = conn.prepareStatement(
@@ -193,6 +213,7 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
                         AuthorityEntity ae = new AuthorityEntity();
                         ae.setId(rs.getObject("id", UUID.class));
                         ae.setAuthority(Authority.valueOf(rs.getString("authority")));
+                        ae.setUser(user);
                         authorityEntityList.add(ae);
                     }
 
@@ -287,20 +308,19 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
     }
 
     @Override
-    public void updateUserData(UserJson user) {
+    public void updateUserData(UserDataEntity user) {
         try (Connection conn = userdataDs.getConnection()) {
             try (PreparedStatement usersPs = conn.prepareStatement(
                     "UPDATE  users " +
-                            "SET id = ?, username = ?, currency = ?, firstname = ?, surname = ?, photo = ? " +
+                            "SET id = ?, currency = ?, firstname = ?, surname = ?, photo = ? " +
                             "WHERE id = ? ")) {
 
                 usersPs.setObject(1, user.getId());
-                usersPs.setString(2, user.getUsername());
-                usersPs.setObject(3, user.getCurrency().name());
-                usersPs.setString(4, user.getFirstname());
-                usersPs.setString(5, user.getSurname());
-                usersPs.setObject(6, user.getPhoto());
-                usersPs.setObject(7, user.getId());
+                usersPs.setObject(2, user.getCurrency().name());
+                usersPs.setString(3, user.getFirstname());
+                usersPs.setString(4, user.getSurname());
+                usersPs.setObject(5, user.getPhoto());
+                usersPs.setObject(6, user.getId());
 
                 usersPs.executeUpdate();
             }

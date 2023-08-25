@@ -17,16 +17,17 @@ public class AuthUserDAOHibernate implements AuthUserDAO {
 
     @Override
     public void updateUser(UserEntity user) {
-
     }
 
     @Override
-    public UserEntity getUser(UUID userId) {
+    public UserEntity getUserById(UUID userId) {
         return null;
     }
 
     @Override
-    public UserEntity getUser(String username) {
+    public UserEntity getUserByName(String username) {
         return null;
     }
+
+
 }
