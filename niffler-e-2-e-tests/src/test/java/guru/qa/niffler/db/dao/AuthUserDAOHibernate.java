@@ -7,8 +7,8 @@ import java.util.UUID;
 public class AuthUserDAOHibernate implements AuthUserDAO {
 
     @Override
-    public int createUser(UserEntity user) {
-        return 0;
+    public UUID createUser(UserEntity user) {
+        return null;
     }
 
     @Override
@@ -22,7 +22,17 @@ public class AuthUserDAOHibernate implements AuthUserDAO {
     }
 
     @Override
-    public UserEntity getUserById(UUID userId) {
+    public void updateUser(UserEntity user) {
+
+    }
+
+    @Override
+    public UserEntity getUser(UUID userId) {
+        return null;
+    }
+
+    @Override
+    public UserEntity getUser(String username) {
         return null;
     }
 }
