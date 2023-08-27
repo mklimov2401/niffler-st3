@@ -29,8 +29,8 @@ public class DBUserExtension implements BeforeEachCallback, ParameterResolver, A
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        UserEntity user;
         if (context.getRequiredTestMethod().isAnnotationPresent(DBUser.class)) {
+            UserEntity user;
             DBUser ann = context.getRequiredTestMethod().getAnnotation(DBUser.class);
             user = createdUserEntity(ann);
             UserEntity userAuthFromDb = authUserDAO.getUser(user.getUsername());
