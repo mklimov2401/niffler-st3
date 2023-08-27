@@ -23,12 +23,14 @@ public class DBUserExtension implements BeforeEachCallback, ParameterResolver, A
 
     private UserDataUserDAO userDataUserDAO = new AuthUserDAOSpringJdbc();
 
+
     @Override
     public void beforeEach(ExtensionContext context) {
         if (context.getRequiredTestMethod().isAnnotationPresent(DBUser.class)) {
             DBUser userAnn = context.getRequiredTestMethod().getAnnotation(DBUser.class);
             UserEntity user = convertToEntity(userAnn);
             UserEntity userAuthFromDb = authUserDAO.getUserByName(user.getUsername());
+
             UserDataEntity userDataFromDb = userDataUserDAO.getUserData(user.getUsername());
             if (Objects.nonNull(userAuthFromDb)){
                 authUserDAO.deleteUserById(userAuthFromDb.getId());
@@ -72,6 +74,7 @@ public class DBUserExtension implements BeforeEachCallback, ParameterResolver, A
             user.setUsername(dbUser.username());
             user.setPassword(dbUser.password());
         }
+
         user.setEnabled(true);
         user.setAccountNonExpired(true);
         user.setAccountNonLocked(true);
