@@ -10,8 +10,7 @@ public class LoginTest extends BaseWebTest {
 
     private LoginPage loginPage = new LoginPage();
 
-    @DBUser(username = "Petr2",
-            password = "12345")
+    @DBUser
     @Test
     void mainPageShouldBeVisibleAfterLogin(UserEntity user) {
         loginPage.signIn(user.getUsername(), user.getPassword());

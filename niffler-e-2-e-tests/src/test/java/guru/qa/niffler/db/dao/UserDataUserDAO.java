@@ -16,6 +16,7 @@ public interface UserDataUserDAO {
 
     UserDataEntity getUserData(String username);
 
-    void updateUserData(UserJson user);
+    void updateUserData(UserDataEntity user);
+
 
 }

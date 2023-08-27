@@ -3,7 +3,6 @@ package guru.qa.niffler.db.dao;
 import guru.qa.niffler.db.DataSourceProvider;
 import guru.qa.niffler.db.ServiceDB;
 import guru.qa.niffler.db.model.*;
-import guru.qa.niffler.model.UserJson;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -62,9 +61,9 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
                 authorityPs.executeBatch();
                 user.setId(generatedUserId);
                 conn.commit();
-                conn.setAutoCommit(true);
             } catch (SQLException e) {
                 conn.rollback();
+            } finally {
                 conn.setAutoCommit(true);
             }
         } catch (SQLException e) {
@@ -72,31 +71,6 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
         }
 
         return generatedUserId;
-    }
-
-    @Override
-    public UserEntity updateUser(UserEntity user) {
-        try (Connection conn = authDs.getConnection();
-             PreparedStatement usersPs = conn.prepareStatement(
-                     "UPDATE users SET " +
-                             "password = ?, " +
-                             "enabled = ?, " +
-                             "account_non_expired = ?, " +
-                             " account_non_locked = ? , " +
-                             "credentials_non_expired = ? " +
-                             "WHERE id = ? ")) {
-
-            usersPs.setString(3, pe.encode(user.getPassword()));
-            usersPs.setBoolean(4, user.getEnabled());
-            usersPs.setBoolean(5, user.getAccountNonExpired());
-            usersPs.setBoolean(6, user.getAccountNonLocked());
-            usersPs.setBoolean(7, user.getCredentialsNonExpired());
-            usersPs.setObject(8, user.getId());
-            usersPs.executeUpdate();
-            return getUserById(user.getId());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -118,15 +92,39 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
                 usersPs.executeUpdate();
 
                 conn.commit();
-                conn.setAutoCommit(true);
             } catch (SQLException e) {
                 conn.rollback();
+            } finally {
                 conn.setAutoCommit(true);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
+    }
+
+    @Override
+    public void updateUser(UserEntity user) {
+        try (Connection conn = authDs.getConnection()) {
+            try (PreparedStatement usersPs = conn.prepareStatement(
+                    "UPDATE  users " +
+                            "SET id = ?, password = ?, enabled = ?, account_non_expired = ?, " +
+                            " account_non_locked = ? , credentials_non_expired = ? " +
+                            "WHERE id = ? ")) {
+
+                usersPs.setObject(1, user.getId());
+                usersPs.setString(2, pe.encode(user.getPassword()));
+                usersPs.setBoolean(3, user.getEnabled());
+                usersPs.setBoolean(4, user.getAccountNonExpired());
+                usersPs.setBoolean(5, user.getAccountNonLocked());
+                usersPs.setBoolean(6, user.getCredentialsNonExpired());
+                usersPs.setObject(7, user.getId());
+
+                usersPs.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -176,14 +174,35 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
                     user.setCredentialsNonExpired(rs.getBoolean("credentials_non_expired"));
                 }
             }
+            try (PreparedStatement authPs = conn.prepareStatement(
+                    "select * from authorities a " +
+                            "where user_id = ?")) {
+                if (Objects.nonNull(user.getId())) {
+                    authPs.setObject(1, user.getId());
+                    authPs.execute();
+                    ResultSet rs = authPs.getResultSet();
+
+                    List<AuthorityEntity> authorityEntityList = new ArrayList<>();
+                    while (rs.next()) {
+                        AuthorityEntity ae = new AuthorityEntity();
+                        ae.setId(rs.getObject("id", UUID.class));
+                        ae.setAuthority(Authority.valueOf(rs.getString("authority")));
+                        ae.setUser(user);
+                        authorityEntityList.add(ae);
+                    }
+
+                    user.setAuthorities(authorityEntityList);
+                }
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return user;
     }
 
+
     @Override
-    public UserEntity getUser(String username) {
+    public UserEntity getUserByName(String username) {
         UserEntity user = new UserEntity();
         try (Connection conn = authDs.getConnection()) {
             try (PreparedStatement usersPs = conn.prepareStatement(
@@ -218,6 +237,8 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
                         AuthorityEntity ae = new AuthorityEntity();
                         ae.setId(rs.getObject("id", UUID.class));
                         ae.setAuthority(Authority.valueOf(rs.getString("authority")));
+                        ae.setUser(user);
+
                         authorityEntityList.add(ae);
                     }
 
@@ -232,17 +253,21 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
 
     @Override
     public int createUserInUserData(UserEntity user) {
-        int createdRows;
-        try (Connection conn = userdataDs.getConnection();
-             PreparedStatement usersPs = conn.prepareStatement("INSERT INTO users (username, currency) VALUES (?, ?)")) {
+        int createdRows = 0;
+        try (Connection conn = userdataDs.getConnection()) {
+            try (PreparedStatement usersPs = conn.prepareStatement(
+                    "INSERT INTO users (username, currency) " +
+                            "VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS)) {
 
-            usersPs.setString(1, user.getUsername());
-            usersPs.setString(2, CurrencyValues.RUB.name());
+                usersPs.setString(1, user.getUsername());
+                usersPs.setString(2, CurrencyValues.RUB.name());
 
-            createdRows = usersPs.executeUpdate();
+                createdRows = usersPs.executeUpdate();
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
         return createdRows;
     }
 
@@ -308,20 +333,20 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
     }
 
     @Override
-    public void updateUserData(UserJson user) {
+    public void updateUserData(UserDataEntity user) {
         try (Connection conn = userdataDs.getConnection()) {
             try (PreparedStatement usersPs = conn.prepareStatement(
                     "UPDATE  users " +
-                            "SET id = ?, username = ?, currency = ?, firstname = ?, surname = ?, photo = ? " +
+                            "SET id = ?, currency = ?, firstname = ?, surname = ?, photo = ? " +
                             "WHERE id = ? ")) {
 
                 usersPs.setObject(1, user.getId());
-                usersPs.setString(2, user.getUsername());
-                usersPs.setObject(3, user.getCurrency().name());
-                usersPs.setString(4, user.getFirstname());
-                usersPs.setString(5, user.getSurname());
-                usersPs.setObject(6, user.getPhoto());
-                usersPs.setObject(7, user.getId());
+                usersPs.setObject(2, user.getCurrency().name());
+                usersPs.setString(3, user.getFirstname());
+                usersPs.setString(4, user.getSurname());
+                usersPs.setObject(5, user.getPhoto());
+                usersPs.setObject(6, user.getId());
+
 
                 usersPs.executeUpdate();
             }
