@@ -131,16 +131,23 @@ public class AuthUserDAOSpringJdbc implements AuthUserDAO, UserDataUserDAO {
         return user.get(0);
     }
 
+
+    @Override
+    public int createUserInUserData(UserEntity user) {
+        return userdataJdbcTemplate.update(
+                "INSERT INTO users (username, currency) VALUES (?, ?)",
+                user.getUsername(),
+                CurrencyValues.RUB.name());
     }
 
     @Override
-    public UserEntity getUser(UUID userId) {
-        return null;
+    public void deleteUserByIdInUserData(UUID userId) {
+        userdataJdbcTemplate.update("DELETE FROM users WHERE id = ?", userId);
     }
 
     @Override
-    public UserEntity getUser(String username) {
-        return null;
+    public void deleteUserByUsernameInUserData(String username) {
+        userdataJdbcTemplate.update("DELETE FROM users WHERE username = ?", username);
     }
 
     @Override
