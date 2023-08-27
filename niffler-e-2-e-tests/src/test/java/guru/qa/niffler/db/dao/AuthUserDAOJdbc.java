@@ -127,32 +127,10 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
         }
     }
 
-    @Override
-    public void updateUser(UserEntity user) {
-        try (Connection conn = authDs.getConnection()) {
-            try (PreparedStatement usersPs = conn.prepareStatement(
-                    "UPDATE  users " +
-                            "SET id = ?, password = ?, enabled = ?, account_non_expired = ?, " +
-                            " account_non_locked = ? , credentials_non_expired = ? " +
-                            "WHERE id = ? ")) {
 
-                usersPs.setObject(1, user.getId());
-                usersPs.setString(2, pe.encode(user.getPassword()));
-                usersPs.setBoolean(3, user.getEnabled());
-                usersPs.setBoolean(4, user.getAccountNonExpired());
-                usersPs.setBoolean(5, user.getAccountNonLocked());
-                usersPs.setBoolean(6, user.getCredentialsNonExpired());
-                usersPs.setObject(7, user.getId());
-
-                usersPs.executeUpdate();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     @Override
-    public UserEntity getUser(UUID userId) {
+    public UserEntity getUserById(UUID userId) {
         UserEntity user = new UserEntity();
         try (Connection conn = authDs.getConnection()) {
             try (PreparedStatement usersPs = conn.prepareStatement(
