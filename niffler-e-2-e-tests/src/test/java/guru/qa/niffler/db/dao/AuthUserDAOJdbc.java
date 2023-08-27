@@ -61,9 +61,9 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
                 authorityPs.executeBatch();
                 user.setId(generatedUserId);
                 conn.commit();
-                conn.setAutoCommit(true);
             } catch (SQLException e) {
                 conn.rollback();
+            } finally {
                 conn.setAutoCommit(true);
             }
         } catch (SQLException e) {
@@ -92,9 +92,9 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
                 usersPs.executeUpdate();
 
                 conn.commit();
-                conn.setAutoCommit(true);
             } catch (SQLException e) {
                 conn.rollback();
+            } finally {
                 conn.setAutoCommit(true);
             }
         } catch (SQLException e) {
