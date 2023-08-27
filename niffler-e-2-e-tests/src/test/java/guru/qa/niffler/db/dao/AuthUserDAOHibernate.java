@@ -5,8 +5,14 @@ import guru.qa.niffler.db.model.UserEntity;
 import java.util.UUID;
 
 public class AuthUserDAOHibernate implements AuthUserDAO {
+
     @Override
     public UUID createUser(UserEntity user) {
+        return null;
+    }
+
+    @Override
+    public UserEntity updateUser(UserEntity user) {
         return null;
     }
 

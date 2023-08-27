@@ -15,5 +15,4 @@ public interface AuthUserDAO {
     void updateUser(UserEntity user);
     UserEntity getUser(UUID userId);
     UserEntity getUser(String username);
-
 }

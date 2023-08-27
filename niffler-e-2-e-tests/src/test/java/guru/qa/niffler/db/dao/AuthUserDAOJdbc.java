@@ -75,6 +75,31 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
     }
 
     @Override
+    public UserEntity updateUser(UserEntity user) {
+        try (Connection conn = authDs.getConnection();
+             PreparedStatement usersPs = conn.prepareStatement(
+                     "UPDATE users SET " +
+                             "password = ?, " +
+                             "enabled = ?, " +
+                             "account_non_expired = ?, " +
+                             " account_non_locked = ? , " +
+                             "credentials_non_expired = ? " +
+                             "WHERE id = ? ")) {
+
+            usersPs.setString(3, pe.encode(user.getPassword()));
+            usersPs.setBoolean(4, user.getEnabled());
+            usersPs.setBoolean(5, user.getAccountNonExpired());
+            usersPs.setBoolean(6, user.getAccountNonLocked());
+            usersPs.setBoolean(7, user.getCredentialsNonExpired());
+            usersPs.setObject(8, user.getId());
+            usersPs.executeUpdate();
+            return getUserById(user.getId());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public void deleteUserById(UUID userId) {
         try (Connection conn = authDs.getConnection()) {
 
@@ -207,21 +232,17 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
 
     @Override
     public int createUserInUserData(UserEntity user) {
-        int createdRows = 0;
-        try (Connection conn = userdataDs.getConnection()) {
-            try (PreparedStatement usersPs = conn.prepareStatement(
-                    "INSERT INTO users (username, currency) " +
-                            "VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS)) {
+        int createdRows;
+        try (Connection conn = userdataDs.getConnection();
+             PreparedStatement usersPs = conn.prepareStatement("INSERT INTO users (username, currency) VALUES (?, ?)")) {
 
-                usersPs.setString(1, user.getUsername());
-                usersPs.setString(2, CurrencyValues.RUB.name());
+            usersPs.setString(1, user.getUsername());
+            usersPs.setString(2, CurrencyValues.RUB.name());
 
-                createdRows = usersPs.executeUpdate();
-            }
+            createdRows = usersPs.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
         return createdRows;
     }
 
