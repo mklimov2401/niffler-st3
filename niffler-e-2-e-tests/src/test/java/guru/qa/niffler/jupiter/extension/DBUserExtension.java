@@ -2,7 +2,6 @@ package guru.qa.niffler.jupiter.extension;
 
 import com.github.javafaker.Faker;
 import guru.qa.niffler.db.dao.AuthUserDAO;
-import guru.qa.niffler.db.dao.AuthUserDAOJdbc;
 import guru.qa.niffler.db.dao.AuthUserDAOSpringJdbc;
 import guru.qa.niffler.db.dao.UserDataUserDAO;
 import guru.qa.niffler.db.model.Authority;
@@ -26,10 +25,9 @@ public class DBUserExtension implements BeforeEachCallback, ParameterResolver, A
 
     @Override
     public void beforeEach(ExtensionContext context) {
-        UserEntity user;
         if (context.getRequiredTestMethod().isAnnotationPresent(DBUser.class)) {
-            DBUser ann = context.getRequiredTestMethod().getAnnotation(DBUser.class);
-            user = createdUserEntity(ann);
+            DBUser userAnn = context.getRequiredTestMethod().getAnnotation(DBUser.class);
+            UserEntity user = convertToEntity(userAnn);
             UserEntity userAuthFromDb = authUserDAO.getUserByName(user.getUsername());
             UserDataEntity userDataFromDb = userDataUserDAO.getUserData(user.getUsername());
             if (Objects.nonNull(userAuthFromDb)){
@@ -64,7 +62,7 @@ public class DBUserExtension implements BeforeEachCallback, ParameterResolver, A
     }
 
 
-    private UserEntity createdUserEntity(DBUser dbUser) {
+    private UserEntity convertToEntity(DBUser dbUser) {
         UserEntity user = new UserEntity();
         if (dbUser.username().isEmpty() || dbUser.password().isEmpty()){
             Faker faker = Faker.instance();
