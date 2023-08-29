@@ -5,7 +5,6 @@ import guru.qa.niffler.page.LoginPage;
 
 @WebTest
 public abstract class BaseWebTest {
-    protected
-    LoginPage loginPage = new LoginPage();
+    protected LoginPage loginPage = new LoginPage();
 
 }
