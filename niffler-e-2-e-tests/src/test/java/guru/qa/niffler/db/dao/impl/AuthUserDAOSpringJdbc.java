@@ -1,10 +1,16 @@
-package guru.qa.niffler.db.dao;
+package guru.qa.niffler.db.dao.impl;
 
-import guru.qa.niffler.db.DataSourceProvider;
+import guru.qa.niffler.db.dao.AuthUserDAO;
+import guru.qa.niffler.db.dao.UserDataUserDAO;
+import guru.qa.niffler.db.jdbc.DataSourceProvider;
 import guru.qa.niffler.db.ServiceDB;
-import guru.qa.niffler.db.mapper.AuthorityEntityRowMapper;
-import guru.qa.niffler.db.mapper.UserDataEntityRowMapper;
-import guru.qa.niffler.db.mapper.UserEntityRowMapper;
+import guru.qa.niffler.db.model.userdata.UserDataEntity;
+import guru.qa.niffler.db.springjdbc.AuthorityEntityRowMapper;
+import guru.qa.niffler.db.model.auth.AuthUserEntity;
+import guru.qa.niffler.db.model.auth.Authority;
+import guru.qa.niffler.db.model.auth.AuthorityEntity;
+import guru.qa.niffler.db.springjdbc.UserDataEntityRowMapper;
+import guru.qa.niffler.db.springjdbc.UserEntityRowMapper;
 import guru.qa.niffler.db.model.*;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -40,7 +46,7 @@ public class AuthUserDAOSpringJdbc implements AuthUserDAO, UserDataUserDAO {
 
     @Override
     @SuppressWarnings("unchecked")
-    public UUID createUser(UserEntity user) {
+    public int createUser(AuthUserEntity user) {
         return authTtpl.execute(status -> {
             KeyHolder kh = new GeneratedKeyHolder();
 
@@ -68,32 +74,32 @@ public class AuthUserDAOSpringJdbc implements AuthUserDAO, UserDataUserDAO {
                     return Authority.values().length;
                 }
             });
-            return userId;
+            return 0;
         });
     }
 
     @Override
-    public void updateUser(UserEntity user) {
+    public AuthUserEntity updateUser(AuthUserEntity user) {
         authJdbcTemplate.update("UPDATE  users " +
                         "SET id = ?, password = ?, enabled = ?, account_non_expired = ?, " +
                         " account_non_locked = ? , credentials_non_expired = ? " +
                         "WHERE id = ? ", user.getId(), pe.encode(user.getPassword()),
                 user.getEnabled(), user.getAccountNonExpired(), user.getAccountNonLocked(),
                 user.getCredentialsNonExpired(), user.getId());
-
+        return user;
     }
 
     @Override
-    public void deleteUserById(UUID userId) {
+    public void deleteUser(AuthUserEntity userId) {
         authTtpl.executeWithoutResult(status -> {
-            authJdbcTemplate.update("DELETE FROM authorities WHERE user_id = ? ", userId);
-            authJdbcTemplate.update("DELETE FROM users WHERE id = ?", userId);
+            authJdbcTemplate.update("DELETE FROM authorities WHERE user_id = ? ", userId.getId());
+            authJdbcTemplate.update("DELETE FROM users WHERE id = ?", userId.getId());
         });
     }
 
     @Override
-    public UserEntity getUserById(UUID userId) {
-        List<UserEntity> user = authJdbcTemplate.query(
+    public AuthUserEntity getUserById(UUID userId) {
+        List<AuthUserEntity> user = authJdbcTemplate.query(
                 "SELECT * FROM users WHERE id = ? ",
                 UserEntityRowMapper.instance,
                 userId
@@ -112,8 +118,8 @@ public class AuthUserDAOSpringJdbc implements AuthUserDAO, UserDataUserDAO {
     }
 
     @Override
-    public UserEntity getUserByName(String username) {
-        List<UserEntity> user = authJdbcTemplate.query(
+    public AuthUserEntity getUserByName(String username) {
+        List<AuthUserEntity> user = authJdbcTemplate.query(
                 "SELECT * FROM users WHERE username = ? ",
                 UserEntityRowMapper.instance,
                 username
@@ -133,7 +139,7 @@ public class AuthUserDAOSpringJdbc implements AuthUserDAO, UserDataUserDAO {
 
 
     @Override
-    public int createUserInUserData(UserEntity user) {
+    public int createUserInUserData(UserDataEntity user) {
         return userdataJdbcTemplate.update(
                 "INSERT INTO users (username, currency) VALUES (?, ?)",
                 user.getUsername(),
@@ -157,7 +163,7 @@ public class AuthUserDAOSpringJdbc implements AuthUserDAO, UserDataUserDAO {
                 UserDataEntityRowMapper.instance,
                 username
         );
-        if (userDataEntity.size() > 0){
+        if (userDataEntity.size() > 0) {
             return userDataEntity.get(0);
         }
         return null;

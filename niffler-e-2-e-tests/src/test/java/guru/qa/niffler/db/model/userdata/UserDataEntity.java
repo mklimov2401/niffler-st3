@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 
 @Entity
 @Table(name = "users")
-public class UserDataUserEntity {
+public class UserDataEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false, columnDefinition = "UUID default gen_random_uuid()")
@@ -114,7 +114,7 @@ public class UserDataUserEntity {
         this.invites = invites;
     }
 
-    public void addFriends(boolean pending, UserDataUserEntity... friends) {
+    public void addFriends(boolean pending, UserDataEntity... friends) {
         List<FriendsEntity> friendsEntities = Stream.of(friends)
                 .map(f -> {
                     FriendsEntity fe = new FriendsEntity();
@@ -127,14 +127,14 @@ public class UserDataUserEntity {
         this.friends.addAll(friendsEntities);
     }
 
-    public void removeFriends(UserDataUserEntity... friends) {
-        for (UserDataUserEntity friend : friends) {
+    public void removeFriends(UserDataEntity... friends) {
+        for (UserDataEntity friend : friends) {
             getFriends().removeIf(f -> f.getFriend().getId().equals(friend.getId()));
         }
     }
 
-    public void removeInvites(UserDataUserEntity... invitations) {
-        for (UserDataUserEntity invite : invitations) {
+    public void removeInvites(UserDataEntity... invitations) {
+        for (UserDataEntity invite : invitations) {
             getInvites().removeIf(i -> i.getUser().getId().equals(invite.getId()));
         }
     }
@@ -143,7 +143,7 @@ public class UserDataUserEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UserDataUserEntity that = (UserDataUserEntity) o;
+        UserDataEntity that = (UserDataEntity) o;
         return Objects.equals(id, that.id) && Objects.equals(username, that.username) && currency == that.currency && Objects.equals(firstname, that.firstname) && Objects.equals(surname, that.surname) && Arrays.equals(photo, that.photo) && Objects.equals(friends, that.friends) && Objects.equals(invites, that.invites);
     }
 

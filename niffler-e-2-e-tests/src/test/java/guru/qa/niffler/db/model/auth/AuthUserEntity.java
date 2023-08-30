@@ -1,5 +1,7 @@
 package guru.qa.niffler.db.model.auth;
 
+import guru.qa.niffler.db.model.CurrencyValues;
+import guru.qa.niffler.db.model.userdata.UserDataEntity;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -117,5 +119,12 @@ public class AuthUserEntity {
     @Override
     public int hashCode() {
         return Objects.hash(id, username, password, enabled, accountNonExpired, accountNonLocked, credentialsNonExpired, authorities);
+    }
+
+    public UserDataEntity toUserDataEntity(CurrencyValues currencyValues){
+        UserDataEntity userData = new UserDataEntity();
+        userData.setUsername(this.username);
+        userData.setCurrency(currencyValues);
+        return userData;
     }
 }
