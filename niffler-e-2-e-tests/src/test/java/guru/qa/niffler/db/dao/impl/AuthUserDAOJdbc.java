@@ -317,6 +317,11 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
     }
 
     @Override
+    public List<UserDataEntity> getUsersData(String username) {
+        return null;
+    }
+
+    @Override
     public void updateUserData(UserDataEntity user) {
         try (Connection conn = userdataDs.getConnection()) {
             try (PreparedStatement usersPs = conn.prepareStatement(

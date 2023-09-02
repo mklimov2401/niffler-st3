@@ -13,7 +13,7 @@ import static jakarta.persistence.FetchType.EAGER;
 
 @Entity
 @Table(name = "users")
-public class AuthUserEntity {
+public class AuthUserEntity implements Cloneable{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false, columnDefinition = "UUID default gen_random_uuid()")
@@ -127,4 +127,10 @@ public class AuthUserEntity {
         userData.setCurrency(currencyValues);
         return userData;
     }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
 }

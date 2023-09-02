@@ -14,6 +14,11 @@ public class DockerConfig implements Config {
     }
 
     @Override
+    public String baseUrl() {
+        return "frontend.niffler.dc";
+    }
+
+    @Override
     public String databaseHost() {
         return "niffler-all-db";
     }

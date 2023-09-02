@@ -5,7 +5,10 @@ import guru.qa.niffler.db.dao.AuthUserDAO;
 import guru.qa.niffler.db.jpa.EntityManagerFactoryProvider;
 import guru.qa.niffler.db.jpa.JpaService;
 import guru.qa.niffler.db.model.auth.AuthUserEntity;
+import guru.qa.niffler.db.model.auth.AuthorityEntity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class AuthUserDAOHibernate extends JpaService implements AuthUserDAO {
@@ -23,12 +26,14 @@ public class AuthUserDAOHibernate extends JpaService implements AuthUserDAO {
 
     @Override
     public AuthUserEntity updateUser(AuthUserEntity user) {
-        return merge(user);
+        AuthUserEntity userByName = getUserByName(user.getUsername());
+        return merge(userByName);
     }
 
     @Override
     public void deleteUser(AuthUserEntity user) {
-        remove(user);
+        AuthUserEntity userByName = getUserByName(user.getUsername());
+        remove(userByName);
     }
 
     @Override

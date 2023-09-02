@@ -26,15 +26,17 @@ public class DBUserExtension implements BeforeEachCallback, ParameterResolver, A
 
 
     @Override
-    public void beforeEach(ExtensionContext context) {
+    public void beforeEach(ExtensionContext context) throws CloneNotSupportedException {
         if (context.getRequiredTestMethod().isAnnotationPresent(DBUser.class)) {
             DBUser userAnn = context.getRequiredTestMethod().getAnnotation(DBUser.class);
             AuthUserEntity user = convertToEntity(userAnn);
+            AuthUserEntity clone = (AuthUserEntity) user.clone();
             authUserDAO.createUser(user);
             AuthUserEntity userAuthFromDb = authUserDAO.getUserByName(user.getUsername());
             userDataUserDAO.createUserInUserData(userAuthFromDb.toUserDataEntity(RUB));
+            context.getStore(NAMESPACE).put(context.getUniqueId(), clone);
 
-            context.getStore(NAMESPACE).put(context.getUniqueId(), user);
+
         }
     }
 

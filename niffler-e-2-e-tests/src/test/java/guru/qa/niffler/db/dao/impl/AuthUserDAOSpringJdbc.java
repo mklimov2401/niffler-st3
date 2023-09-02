@@ -170,6 +170,11 @@ public class AuthUserDAOSpringJdbc implements AuthUserDAO, UserDataUserDAO {
     }
 
     @Override
+    public List<UserDataEntity> getUsersData(String username) {
+        return null;
+    }
+
+    @Override
     public void updateUserData(UserDataEntity user) {
         userdataJdbcTemplate.update("UPDATE  users " +
                         "SET id = ?, currency = ?, firstname = ?, surname = ?, photo = ? " +

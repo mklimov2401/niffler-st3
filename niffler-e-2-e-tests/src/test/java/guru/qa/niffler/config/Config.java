@@ -9,6 +9,9 @@ public interface Config {
         return LocalConfig.config;
     }
 
+
+    String baseUrl();
+
     String databaseHost();
 
     String nifflerSpendUrl();
@@ -24,4 +27,5 @@ public interface Config {
     default int databasePort() {
         return 5432;
     }
+
 }
