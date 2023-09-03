@@ -12,7 +12,10 @@ import guru.qa.niffler.db.model.auth.AuthUserEntity;
 import guru.qa.niffler.jupiter.annotation.DBUser;
 import org.junit.jupiter.api.extension.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 import static guru.qa.niffler.db.model.CurrencyValues.*;
 
@@ -58,7 +61,7 @@ public class DBUserExtension implements BeforeEachCallback, ParameterResolver, A
 
     private AuthUserEntity convertToEntity(DBUser dbUser) {
         AuthUserEntity user = new AuthUserEntity();
-        if (dbUser.username().isEmpty() || dbUser.password().isEmpty()){
+        if (dbUser.username().isEmpty() || dbUser.password().isEmpty()) {
             Faker faker = Faker.instance();
             user.setUsername(faker.name().username());
             user.setPassword(faker.internet().password());
@@ -71,13 +74,13 @@ public class DBUserExtension implements BeforeEachCallback, ParameterResolver, A
         user.setAccountNonExpired(true);
         user.setAccountNonLocked(true);
         user.setCredentialsNonExpired(true);
-        user.setAuthorities(Arrays.stream(Authority.values())
+        user.setAuthorities(new ArrayList<>(Arrays.stream(Authority.values())
                 .map(a -> {
                     AuthorityEntity ae = new AuthorityEntity();
                     ae.setAuthority(a);
                     ae.setUser(user);
                     return ae;
-                }).toList());
+                }).collect(Collectors.toList())));
         return user;
     }
 
