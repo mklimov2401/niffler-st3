@@ -1,5 +1,6 @@
 package guru.qa.niffler.page;
 
+import com.codeborne.selenide.WebDriverRunner;
 import guru.qa.niffler.model.SpendJson;
 import io.qameta.allure.Allure;
 
@@ -8,8 +9,9 @@ import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.$;
 import static io.qameta.allure.Allure.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MainPage {
+public class MainPage extends BasePage{
 
     public MainPage findSpend(SpendJson spend){
         step("Find spend", () ->
@@ -34,6 +36,12 @@ public class MainPage {
                 $(".spendings__content tbody")
                         .$$("tr")
                         .shouldHave(size(0)));
+        return this;
+    }
+
+    public MainPage checkingMainPage() {
+        step("Check main page", () ->
+                assertEquals(WebDriverRunner.url(), cfg.baseUrl() + "/main"));
         return this;
     }
 }

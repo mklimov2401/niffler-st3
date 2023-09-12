@@ -13,9 +13,10 @@ import static guru.qa.niffler.jupiter.annotation.User.UserType.*;
 
 public class InvitationReceivedWebTest extends BaseWebTest {
 
-    NavigationPage navigationPage = new NavigationPage();
-    FriendsPage friendsPage = new FriendsPage();
-    AllPeoplePage peoplePage = new AllPeoplePage();
+    private LoginPage loginPage = new LoginPage();
+    private NavigationPage navigationPage = new NavigationPage();
+    private FriendsPage friendsPage = new FriendsPage();
+    private AllPeoplePage peoplePage = new AllPeoplePage();
 
     @BeforeEach
     void doLogin(@User(userType = INVITATION_RECEIVED) UserJson userForTest) {

@@ -12,9 +12,9 @@ import static guru.qa.niffler.jupiter.annotation.User.UserType.WITH_FRIENDS;
 
 
 public class FriendsWebTest extends BaseWebTest {
-
-    NavigationPage navigationPage = new NavigationPage();
-    FriendsPage friendsPage = new FriendsPage();
+    private LoginPage loginPage = new LoginPage();
+    private NavigationPage navigationPage = new NavigationPage();
+    private FriendsPage friendsPage = new FriendsPage();
 
     @BeforeEach
     void doLogin(@User(userType = WITH_FRIENDS) UserJson userForTest) {
