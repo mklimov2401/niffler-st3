@@ -2,45 +2,40 @@ package guru.qa.niffler.jupiter.extension;
 
 import com.github.javafaker.Faker;
 import guru.qa.niffler.db.dao.AuthUserDAO;
-import guru.qa.niffler.db.dao.AuthUserDAOSpringJdbc;
 import guru.qa.niffler.db.dao.UserDataUserDAO;
-import guru.qa.niffler.db.model.Authority;
-import guru.qa.niffler.db.model.AuthorityEntity;
-import guru.qa.niffler.db.model.UserDataEntity;
-import guru.qa.niffler.db.model.UserEntity;
+import guru.qa.niffler.db.dao.impl.AuthUserDAOHibernate;
+import guru.qa.niffler.db.dao.impl.UserdataUserDAOHibernate;
+import guru.qa.niffler.db.model.CurrencyValues;
+import guru.qa.niffler.db.model.auth.Authority;
+import guru.qa.niffler.db.model.auth.AuthorityEntity;
+import guru.qa.niffler.db.model.auth.AuthUserEntity;
 import guru.qa.niffler.jupiter.annotation.DBUser;
 import org.junit.jupiter.api.extension.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.Collection;
+import java.util.stream.Collectors;
+
+import static guru.qa.niffler.db.model.CurrencyValues.*;
 
 @ExtendWith(DaoExtension.class)
 public class DBUserExtension implements BeforeEachCallback, ParameterResolver, AfterTestExecutionCallback {
     public ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(DBUserExtension.class);
 
-    private AuthUserDAO authUserDAO = new AuthUserDAOSpringJdbc();
+    private AuthUserDAO authUserDAO = new AuthUserDAOHibernate();
 
-    private UserDataUserDAO userDataUserDAO = new AuthUserDAOSpringJdbc();
+    private UserDataUserDAO userDataUserDAO = new UserdataUserDAOHibernate();
 
 
     @Override
     public void beforeEach(ExtensionContext context) {
         if (context.getRequiredTestMethod().isAnnotationPresent(DBUser.class)) {
             DBUser userAnn = context.getRequiredTestMethod().getAnnotation(DBUser.class);
-            UserEntity user = convertToEntity(userAnn);
-            UserEntity userAuthFromDb = authUserDAO.getUserByName(user.getUsername());
-
-            UserDataEntity userDataFromDb = userDataUserDAO.getUserData(user.getUsername());
-            if (Objects.nonNull(userAuthFromDb)){
-                authUserDAO.deleteUserById(userAuthFromDb.getId());
-            }
-            if (Objects.nonNull(userDataFromDb)){
-                userDataUserDAO.deleteUserByUsernameInUserData(userDataFromDb.getUsername());
-            }
-            UUID uuid = authUserDAO.createUser(user);
-            user.setId(uuid);
-            userDataUserDAO.createUserInUserData(user);
+            AuthUserEntity user = convertToEntity(userAnn);
+            authUserDAO.createUser(user);
+            AuthUserEntity userAuthFromDb = authUserDAO.getUserByName(user.getUsername());
+            userDataUserDAO.createUserInUserData(userAuthFromDb.toUserDataEntity(RUB));
 
             context.getStore(NAMESPACE).put(context.getUniqueId(), user);
         }
@@ -48,25 +43,25 @@ public class DBUserExtension implements BeforeEachCallback, ParameterResolver, A
 
     @Override
     public void afterTestExecution(ExtensionContext context) {
-        UserEntity user = context.getStore(NAMESPACE).get(context.getUniqueId(), UserEntity.class);
+        AuthUserEntity user = context.getStore(NAMESPACE).get(context.getUniqueId(), AuthUserEntity.class);
         userDataUserDAO.deleteUserByUsernameInUserData(user.getUsername());
-        authUserDAO.deleteUserById(user.getId());
+        authUserDAO.deleteUser(user);
     }
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return parameterContext.getParameter().getType().isAssignableFrom(UserEntity.class);
+        return parameterContext.getParameter().getType().isAssignableFrom(AuthUserEntity.class);
     }
 
     @Override
-    public UserEntity resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return extensionContext.getStore(NAMESPACE).get(extensionContext.getUniqueId(), UserEntity.class);
+    public AuthUserEntity resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        return extensionContext.getStore(NAMESPACE).get(extensionContext.getUniqueId(), AuthUserEntity.class);
     }
 
 
-    private UserEntity convertToEntity(DBUser dbUser) {
-        UserEntity user = new UserEntity();
-        if (dbUser.username().isEmpty() || dbUser.password().isEmpty()){
+    private AuthUserEntity convertToEntity(DBUser dbUser) {
+        AuthUserEntity user = new AuthUserEntity();
+        if (dbUser.username().isEmpty() || dbUser.password().isEmpty()) {
             Faker faker = Faker.instance();
             user.setUsername(faker.name().username());
             user.setPassword(faker.internet().password());
@@ -79,12 +74,13 @@ public class DBUserExtension implements BeforeEachCallback, ParameterResolver, A
         user.setAccountNonExpired(true);
         user.setAccountNonLocked(true);
         user.setCredentialsNonExpired(true);
-        user.setAuthorities(Arrays.stream(Authority.values())
+        user.setAuthorities(new ArrayList<>(Arrays.stream(Authority.values())
                 .map(a -> {
                     AuthorityEntity ae = new AuthorityEntity();
                     ae.setAuthority(a);
+                    ae.setUser(user);
                     return ae;
-                }).toList());
+                }).collect(Collectors.toList())));
         return user;
     }
 

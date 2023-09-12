@@ -11,14 +11,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static guru.qa.niffler.jupiter.annotation.User.UserType;
 import static guru.qa.niffler.jupiter.annotation.User.UserType.*;
 
 public class UserQueueExtension implements BeforeEachCallback, AfterTestExecutionCallback, ParameterResolver {
 
     public static ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UserQueueExtension.class);
 
-    private static final Map<UserType, Queue<UserJson>> usersQueue = new ConcurrentHashMap<>();
+    private static final Map<User.UserType, Queue<UserJson>> usersQueue = new ConcurrentHashMap<>();
 
     static {
         Queue<UserJson> usersWithFriends = new ConcurrentLinkedQueue<>();

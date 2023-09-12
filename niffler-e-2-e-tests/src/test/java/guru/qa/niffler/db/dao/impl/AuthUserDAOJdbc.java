@@ -1,8 +1,14 @@
-package guru.qa.niffler.db.dao;
+package guru.qa.niffler.db.dao.impl;
 
-import guru.qa.niffler.db.DataSourceProvider;
+import guru.qa.niffler.db.dao.AuthUserDAO;
+import guru.qa.niffler.db.dao.UserDataUserDAO;
+import guru.qa.niffler.db.jdbc.DataSourceProvider;
 import guru.qa.niffler.db.ServiceDB;
 import guru.qa.niffler.db.model.*;
+import guru.qa.niffler.db.model.auth.AuthUserEntity;
+import guru.qa.niffler.db.model.auth.Authority;
+import guru.qa.niffler.db.model.auth.AuthorityEntity;
+import guru.qa.niffler.db.model.userdata.UserDataEntity;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -20,7 +26,7 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
     private final static DataSource userdataDs = DataSourceProvider.INSTANCE.getDataSource(ServiceDB.USERDATA);
 
     @Override
-    public UUID createUser(UserEntity user) {
+    public int createUser(AuthUserEntity user) {
         UUID generatedUserId = null;
         try (Connection conn = authDs.getConnection()) {
 
@@ -70,41 +76,12 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
             throw new RuntimeException(e);
         }
 
-        return generatedUserId;
+        return 0;
     }
 
-    @Override
-    public void deleteUserById(UUID userId) {
-        try (Connection conn = authDs.getConnection()) {
-
-            conn.setAutoCommit(false);
-
-            try (PreparedStatement usersPs = conn.prepareStatement(
-                    "DELETE FROM users WHERE id = ?");
-
-                 PreparedStatement authorityPs = conn.prepareStatement(
-                         "DELETE FROM authorities WHERE user_id = ?")) {
-
-                authorityPs.setObject(1, userId);
-                authorityPs.executeUpdate();
-
-                usersPs.setObject(1, userId);
-                usersPs.executeUpdate();
-
-                conn.commit();
-            } catch (SQLException e) {
-                conn.rollback();
-            } finally {
-                conn.setAutoCommit(true);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
 
     @Override
-    public void updateUser(UserEntity user) {
+    public AuthUserEntity updateUser(AuthUserEntity user) {
         try (Connection conn = authDs.getConnection()) {
             try (PreparedStatement usersPs = conn.prepareStatement(
                     "UPDATE  users " +
@@ -121,6 +98,36 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
                 usersPs.setObject(7, user.getId());
 
                 usersPs.executeUpdate();
+                return user;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void deleteUser(AuthUserEntity userId) {
+        try (Connection conn = authDs.getConnection()) {
+
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement usersPs = conn.prepareStatement(
+                    "DELETE FROM users WHERE id = ?");
+
+                 PreparedStatement authorityPs = conn.prepareStatement(
+                         "DELETE FROM authorities WHERE user_id = ?")) {
+
+                authorityPs.setObject(1, userId.getId());
+                authorityPs.executeUpdate();
+
+                usersPs.setObject(1, userId.getId());
+                usersPs.executeUpdate();
+
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+            } finally {
+                conn.setAutoCommit(true);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -128,10 +135,9 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
     }
 
 
-
     @Override
-    public UserEntity getUserById(UUID userId) {
-        UserEntity user = new UserEntity();
+    public AuthUserEntity getUserById(UUID userId) {
+        AuthUserEntity user = new AuthUserEntity();
         try (Connection conn = authDs.getConnection()) {
             try (PreparedStatement usersPs = conn.prepareStatement(
                     "SELECT * FROM users " +
@@ -180,8 +186,8 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
 
 
     @Override
-    public UserEntity getUserByName(String username) {
-        UserEntity user = new UserEntity();
+    public AuthUserEntity getUserByName(String username) {
+        AuthUserEntity user = new AuthUserEntity();
         try (Connection conn = authDs.getConnection()) {
             try (PreparedStatement usersPs = conn.prepareStatement(
                     "SELECT * FROM users " +
@@ -230,7 +236,7 @@ public class AuthUserDAOJdbc implements AuthUserDAO, UserDataUserDAO {
     }
 
     @Override
-    public int createUserInUserData(UserEntity user) {
+    public int createUserInUserData(UserDataEntity user) {
         int createdRows = 0;
         try (Connection conn = userdataDs.getConnection()) {
             try (PreparedStatement usersPs = conn.prepareStatement(
