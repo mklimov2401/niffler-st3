@@ -23,10 +23,4 @@ public class AllureSqlLogger extends StdoutLogger {
             attachmentProcessor.addAttachment(sqlAttachment, attachmentRenderer);
         }
     }
-
-    public void testLogSql(String name){
-        SqlAttachment sqlAttachment = new SqlAttachment(name,
-                "insert into users (currency, firstname, photo, surname, username, id) values ('RUB', NULL, NULL, NULL, 'ben.ohara', '4911e2ae-f11a-4444-b60c-84cecb27f60f')", "insert into users (currency, firstname, photo, surname, username, id) values (?, ?, ?, ?, ?, ?)");
-        attachmentProcessor.addAttachment(sqlAttachment, attachmentRenderer);
-    }
 }

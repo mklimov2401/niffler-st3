@@ -1,39 +1,32 @@
 package guru.qa.niffler.jupiter.extension;
 
 import com.github.javafaker.Faker;
-import guru.qa.niffler.db.dao.AuthUserDAO;
-import guru.qa.niffler.db.dao.UserDataUserDAO;
-import guru.qa.niffler.db.dao.impl.AuthUserDAOHibernate;
-import guru.qa.niffler.db.dao.impl.UserdataUserDAOHibernate;
-import guru.qa.niffler.db.model.CurrencyValues;
+import guru.qa.niffler.db.model.auth.AuthUserEntity;
 import guru.qa.niffler.db.model.auth.Authority;
 import guru.qa.niffler.db.model.auth.AuthorityEntity;
-import guru.qa.niffler.db.model.auth.AuthUserEntity;
+import guru.qa.niffler.db.repository.UserRepository;
+import guru.qa.niffler.db.repository.UserRepositoryHibernate;
 import guru.qa.niffler.jupiter.annotation.DBUser;
+import io.qameta.allure.Step;
 import org.junit.jupiter.api.extension.*;
 
 import java.util.Arrays;
-
-import static guru.qa.niffler.db.model.CurrencyValues.*;
 
 @ExtendWith(DaoExtension.class)
 public class DBUserExtension implements BeforeEachCallback, ParameterResolver, AfterTestExecutionCallback {
     public ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(DBUserExtension.class);
 
-    private AuthUserDAO authUserDAO = new AuthUserDAOHibernate();
-
-    private UserDataUserDAO userDataUserDAO = new UserdataUserDAOHibernate();
+    private UserRepository userRepository = new UserRepositoryHibernate();
 
 
     @Override
+    @Step("Created user")
     public void beforeEach(ExtensionContext context) throws CloneNotSupportedException {
         if (context.getRequiredTestMethod().isAnnotationPresent(DBUser.class)) {
             DBUser userAnn = context.getRequiredTestMethod().getAnnotation(DBUser.class);
             AuthUserEntity user = convertToEntity(userAnn);
             AuthUserEntity clone = (AuthUserEntity) user.clone();
-            authUserDAO.createUser(user);
-            AuthUserEntity userAuthFromDb = authUserDAO.getUserByName(user.getUsername());
-            userDataUserDAO.createUserInUserData(userAuthFromDb.toUserDataEntity(RUB));
+            userRepository.createUserForTest(user);
             context.getStore(NAMESPACE).put(context.getUniqueId(), clone);
 
 
@@ -41,10 +34,10 @@ public class DBUserExtension implements BeforeEachCallback, ParameterResolver, A
     }
 
     @Override
+    @Step("Deleted user")
     public void afterTestExecution(ExtensionContext context) {
         AuthUserEntity user = context.getStore(NAMESPACE).get(context.getUniqueId(), AuthUserEntity.class);
-        userDataUserDAO.deleteUserByUsernameInUserData(user.getUsername());
-        authUserDAO.deleteUser(user);
+        userRepository.removeAfterTest(user);
     }
 
     @Override
