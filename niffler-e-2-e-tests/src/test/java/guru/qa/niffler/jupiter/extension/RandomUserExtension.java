@@ -6,6 +6,8 @@ import guru.qa.niffler.db.dao.UserDataUserDAO;
 import guru.qa.niffler.db.dao.impl.AuthUserDAOHibernate;
 import guru.qa.niffler.db.dao.impl.UserdataUserDAOHibernate;
 import guru.qa.niffler.db.model.auth.AuthUserEntity;
+import guru.qa.niffler.db.repository.UserRepository;
+import guru.qa.niffler.db.repository.UserRepositoryHibernate;
 import guru.qa.niffler.jupiter.annotation.RandomUser;
 import org.junit.jupiter.api.extension.*;
 
@@ -28,11 +30,9 @@ public class RandomUserExtension implements BeforeEachCallback, ParameterResolve
     @Override
     public void afterTestExecution(ExtensionContext context) {
         AuthUserEntity user = context.getStore(NAMESPACE).get(context.getUniqueId(), AuthUserEntity.class);
-        UserDataUserDAO userDataUserDAO = new UserdataUserDAOHibernate();
-        AuthUserDAO authUserDAO = new AuthUserDAOHibernate();
-        if (!userDataUserDAO.getUsersData(user.getUsername()).isEmpty()) {
-            userDataUserDAO.deleteUserByUsernameInUserData(user.getUsername());
-            authUserDAO.deleteUser(user);
+        UserRepository userRepository = new UserRepositoryHibernate();
+        if (!userRepository.getUsersData(user).isEmpty()) {
+            userRepository.removeAfterTest(user);
         }
     }
 
