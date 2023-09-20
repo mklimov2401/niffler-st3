@@ -14,7 +14,11 @@ public interface Config {
 
     String databaseHost();
 
+    String nifflerFrontUrl();
+
     String nifflerSpendUrl();
+
+    String nifflerAuthUrl();
 
     default String databaseUser() {
         return "postgres";

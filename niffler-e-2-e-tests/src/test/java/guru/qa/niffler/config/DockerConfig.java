@@ -24,7 +24,19 @@ public class DockerConfig implements Config {
     }
 
     @Override
+    public String nifflerFrontUrl() {
+        return "http://frontend.niffler.dc";
+    }
+
+
+    @Override
     public String nifflerSpendUrl() {
         return "niffler-spend:8093";
+    }
+
+
+    @Override
+    public String nifflerAuthUrl() {
+        return "http://auth.niffler.dc";
     }
 }

@@ -12,14 +12,13 @@ import org.junit.jupiter.api.extension.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.stream.Collectors;
 
 @ExtendWith(DaoExtension.class)
-public class DBUserExtension implements BeforeEachCallback, ParameterResolver, AfterTestExecutionCallback {
-    public ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(DBUserExtension.class);
+public class DbUserExtension implements BeforeEachCallback, ParameterResolver, AfterTestExecutionCallback {
+    public static ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(DbUserExtension.class);
 
-    private UserRepository userRepository = new UserRepositoryHibernate();
+    private final UserRepository userRepository = new UserRepositoryHibernate();
 
 
     @Override
@@ -31,8 +30,6 @@ public class DBUserExtension implements BeforeEachCallback, ParameterResolver, A
             AuthUserEntity clone = (AuthUserEntity) user.clone();
             userRepository.createUserForTest(user);
             context.getStore(NAMESPACE).put(context.getUniqueId(), clone);
-
-
         }
     }
 
@@ -40,12 +37,15 @@ public class DBUserExtension implements BeforeEachCallback, ParameterResolver, A
     @Step("Deleted user")
     public void afterTestExecution(ExtensionContext context) {
         AuthUserEntity user = context.getStore(NAMESPACE).get(context.getUniqueId(), AuthUserEntity.class);
-        userRepository.removeAfterTest(user);
+        if (user != null) {
+            userRepository.removeAfterTest(user);
+        }
     }
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return parameterContext.getParameter().getType().isAssignableFrom(AuthUserEntity.class);
+        return parameterContext.getParameter().getType().isAssignableFrom(AuthUserEntity.class)
+                && extensionContext.getRequiredTestMethod().isAnnotationPresent(DBUser.class);
     }
 
     @Override

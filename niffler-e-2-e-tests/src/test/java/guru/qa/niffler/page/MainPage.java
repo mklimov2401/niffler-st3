@@ -2,7 +2,6 @@ package guru.qa.niffler.page;
 
 import com.codeborne.selenide.WebDriverRunner;
 import guru.qa.niffler.model.SpendJson;
-import io.qameta.allure.Allure;
 
 import static com.codeborne.selenide.CollectionCondition.size;
 import static com.codeborne.selenide.Condition.text;
@@ -41,7 +40,7 @@ public class MainPage extends BasePage{
 
     public MainPage checkingMainPage() {
         step("Check main page", () ->
-                assertEquals(WebDriverRunner.url(), cfg.baseUrl() + "/main"));
+                assertEquals(WebDriverRunner.url(), CFG.baseUrl() + "/main"));
         return this;
     }
 }

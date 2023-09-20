@@ -1,9 +1,8 @@
 package guru.qa.niffler.test;
 
-import guru.qa.niffler.db.model.auth.AuthUserEntity;
+import guru.qa.niffler.jupiter.annotation.ApiLogin;
 import guru.qa.niffler.jupiter.annotation.DBUser;
 import guru.qa.niffler.page.LoginPage;
-import guru.qa.niffler.page.MainPage;
 import guru.qa.niffler.page.NavigationPage;
 import guru.qa.niffler.page.ProfilePage;
 import org.junit.jupiter.api.Test;
@@ -11,16 +10,17 @@ import org.junit.jupiter.api.Test;
 
 public class AddCategoryTest extends BaseWebTest {
 
-    private LoginPage login = new LoginPage();
-    private NavigationPage nav = new NavigationPage();
+    private final LoginPage login = new LoginPage();
+    private final NavigationPage nav = new NavigationPage();
 
-    private ProfilePage profile = new ProfilePage();
+    private final ProfilePage profile = new ProfilePage();
 
     @DBUser
+    @ApiLogin
     @Test
-    void addCategory(AuthUserEntity user) {
+    void addCategory() {
         String category = "Курсы";
-        login.signIn(user.getUsername(), user.getPassword());
+        login.openMain();
         nav.goToProfile();
         profile.enterCategory(category);
         profile.create();
