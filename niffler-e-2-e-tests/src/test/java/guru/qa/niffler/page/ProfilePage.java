@@ -1,12 +1,9 @@
 package guru.qa.niffler.page;
 
 
-import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import com.codeborne.selenide.WebDriverRunner;
 import guru.qa.niffler.db.model.CurrencyValues;
-import io.qameta.allure.Allure;
 import org.junit.jupiter.api.Assertions;
 
 import static com.codeborne.selenide.Condition.*;
@@ -95,7 +92,7 @@ public class ProfilePage extends BasePage{
 
     public ProfilePage checkingProfilePage() {
         step("Check profile page", () ->
-                assertEquals(WebDriverRunner.url(), cfg.baseUrl() + "/profile"));
+                assertEquals(WebDriverRunner.url(), CFG.baseUrl() + "/profile"));
         return this;
     }
 }

@@ -1,8 +1,6 @@
 package guru.qa.niffler.page;
 
 import com.codeborne.selenide.WebDriverRunner;
-import io.qameta.allure.Allure;
-import org.junit.jupiter.api.Assertions;
 
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selectors.byText;
@@ -33,7 +31,7 @@ public class AllPeoplePage extends BasePage {
 
     public AllPeoplePage checkingAllPeoplePage() {
         step("Check all people page", () ->
-                assertEquals(WebDriverRunner.url(), cfg.baseUrl() + "/people"));
+                assertEquals(WebDriverRunner.url(), CFG.baseUrl() + "/people"));
         return this;
     }
 }

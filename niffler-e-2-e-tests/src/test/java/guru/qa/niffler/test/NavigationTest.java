@@ -1,6 +1,6 @@
 package guru.qa.niffler.test;
 
-import guru.qa.niffler.db.model.auth.AuthUserEntity;
+import guru.qa.niffler.jupiter.annotation.ApiLogin;
 import guru.qa.niffler.jupiter.annotation.DBUser;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.NavigationPage;
@@ -9,40 +9,44 @@ import org.junit.jupiter.api.Test;
 
 public class NavigationTest extends BaseWebTest {
 
-    private LoginPage loginPage = new LoginPage();
+    private final LoginPage loginPage = new LoginPage();
 
-    private NavigationPage nav = new NavigationPage();
+    private final NavigationPage nav = new NavigationPage();
 
     @DBUser
+    @ApiLogin
     @Test
-    void goToFriendsPage(AuthUserEntity user) {
-        loginPage.signIn(user.getUsername(), user.getPassword());
+    void goToFriendsPage() {
+        loginPage.openMain();
         nav
                 .goToFriends()
                 .checkingFreindsPage();
     }
 
     @DBUser
+    @ApiLogin
     @Test
-    void goToAllPeoplePage(AuthUserEntity user) {
-        loginPage.signIn(user.getUsername(), user.getPassword());
+    void goToAllPeoplePage() {
+        loginPage.openMain();
         nav
                 .goToAllPeople()
                 .checkingAllPeoplePage();
     }
 
     @DBUser
+    @ApiLogin
     @Test
-    void goToProfilePage(AuthUserEntity user) {
-        loginPage.signIn(user.getUsername(), user.getPassword());
+    void goToProfilePage() {
+        loginPage.openMain();
         nav
                 .goToProfile()
                 .checkingProfilePage();
     }
     @DBUser
+    @ApiLogin
     @Test
-    void goToMainPage(AuthUserEntity user) {
-        loginPage.signIn(user.getUsername(), user.getPassword());
+    void goToMainPage() {
+        loginPage.openMain();
         nav.goToProfile()
                 .checkingProfilePage();
         nav.goToMain()

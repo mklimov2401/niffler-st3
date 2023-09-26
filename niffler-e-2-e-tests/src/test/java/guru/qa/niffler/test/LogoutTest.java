@@ -1,6 +1,6 @@
 package guru.qa.niffler.test;
 
-import guru.qa.niffler.db.model.auth.AuthUserEntity;
+import guru.qa.niffler.jupiter.annotation.ApiLogin;
 import guru.qa.niffler.jupiter.annotation.DBUser;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.NavigationPage;
@@ -9,14 +9,15 @@ import org.junit.jupiter.api.Test;
 
 public class LogoutTest extends BaseWebTest {
 
-    private LoginPage loginPage = new LoginPage();
+    private final LoginPage loginPage = new LoginPage();
 
-    private NavigationPage nav = new NavigationPage();
+    private final NavigationPage nav = new NavigationPage();
 
     @DBUser
+    @ApiLogin
     @Test
-    void logout(AuthUserEntity user) {
-        loginPage.signIn(user.getUsername(), user.getPassword());
+    void logout() {
+        loginPage.openMain();
         nav.logout();
         loginPage.checkWelcome();
     }

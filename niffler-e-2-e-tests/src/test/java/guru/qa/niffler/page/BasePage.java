@@ -4,5 +4,5 @@ import guru.qa.niffler.config.Config;
 
 public class BasePage {
 
-    protected static final Config cfg = Config.getInstance();
+    protected static final Config CFG = Config.getInstance();
 }

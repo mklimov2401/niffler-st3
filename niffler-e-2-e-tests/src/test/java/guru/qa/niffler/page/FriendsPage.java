@@ -1,10 +1,7 @@
 package guru.qa.niffler.page;
 
 import com.codeborne.selenide.CollectionCondition;
-import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.WebDriverRunner;
-import guru.qa.niffler.config.Config;
-import org.junit.jupiter.api.Assertions;
 
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selectors.byText;
@@ -38,7 +35,7 @@ public class FriendsPage extends BasePage {
 
     public FriendsPage checkingFreindsPage() {
         step("Check friends page", () ->
-                assertEquals(WebDriverRunner.url(), cfg.baseUrl() + "/friends"));
+                assertEquals(WebDriverRunner.url(), CFG.baseUrl() + "/friends"));
         return this;
     }
 }
