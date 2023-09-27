@@ -4,6 +4,7 @@ import guru.qa.niffler.data.CurrencyValues;
 import guru.qa.niffler.data.UserEntity;
 import guru.qa.niffler.data.repository.UserRepository;
 import guru.qa.niffler.ex.NotFoundException;
+import guru.qa.niffler.model.FriendJson;
 import guru.qa.niffler.model.FriendState;
 import guru.qa.niffler.model.UserJson;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,8 +21,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static guru.qa.niffler.model.FriendState.FRIEND;
-import static guru.qa.niffler.model.FriendState.INVITE_SENT;
+import static guru.qa.niffler.model.FriendState.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -48,8 +48,6 @@ class UserDataServiceTest {
 
 
     private String notExistingUser = "not_existing_user";
-
-
 
 
     @BeforeEach
@@ -116,6 +114,19 @@ class UserDataServiceTest {
     }
 
     @Test
+    void requiredUserShouldReturnCorrectUser(@Mock UserRepository userRepository) {
+        when(userRepository.findByUsername(eq(mainTestUserName)))
+                .thenReturn(mainTestUser);
+
+        testedObject = new UserDataService(userRepository);
+
+        UserEntity requiredUser = testedObject.getRequiredUser(mainTestUserName);
+        assertEquals(mainTestUserUuid, requiredUser.getId(), "check id");
+        assertEquals(mainTestUserName, requiredUser.getUsername(), "check username");
+        assertEquals(CurrencyValues.RUB, requiredUser.getCurrency(), "check currency");
+    }
+
+    @Test
     void allUsersShouldReturnCorrectUsersList(@Mock UserRepository userRepository) {
         when(userRepository.findByUsernameNot(eq(mainTestUserName)))
                 .thenReturn(getMockUsersMappingFromDb());
@@ -165,6 +176,132 @@ class UserDataServiceTest {
                 .containsAll(expectedStates));
     }
 
+    @Test
+    void invitationsShouldInviteReceived(@Mock UserRepository userRepository) {
+        secondTestUser.addFriends(true, mainTestUser);
+        mainTestUser.addInvites(secondTestUser);
+
+        testedObject = new UserDataService(userRepository);
+
+        when(userRepository.findByUsername(eq(mainTestUserName)))
+                .thenReturn(mainTestUser);
+
+        List<UserJson> invitations = testedObject.invitations(mainTestUserName);
+
+
+        assertEquals(1, invitations.size(), "checking the number of invite received");
+        assertEquals(INVITE_RECEIVED, invitations.get(0).getFriendState(), "checking the state when adding friends");
+    }
+
+    @Test
+    void addFriendShouldInviteSent(@Mock UserRepository userRepository) {
+        testedObject = new UserDataService(userRepository);
+
+        when(userRepository.findByUsername(eq(mainTestUserName)))
+                .thenReturn(mainTestUser);
+        when(userRepository.findByUsername(eq(secondTestUserName)))
+                .thenReturn(secondTestUser);
+
+        FriendJson friendJson = new FriendJson();
+        friendJson.setUsername(secondTestUserName);
+
+        UserJson currentUser = testedObject.addFriend(mainTestUserName, friendJson);
+        UserEntity dima = testedObject.getRequiredUser(mainTestUserName);
+
+        assertEquals(1, dima.getFriends().size(), "checking the number of friends");
+        assertEquals(INVITE_SENT, currentUser.getFriendState(), "checking the state when adding friends");
+    }
+
+
+
+
+    @Test
+    void acceptInvitationShouldReturnCorrectUpdateUsersList(@Mock UserRepository userRepository) {
+        currentUserWithReceivedInvitation();
+
+        testedObject = new UserDataService(userRepository);
+
+        when(userRepository.findByUsername(eq(mainTestUserName)))
+                .thenReturn(mainTestUser);
+        when(userRepository.findByUsername(eq(thirdTestUserName)))
+                .thenReturn(thirdTestUser);
+        when(userRepository.findByUsernameNot(eq(mainTestUserName)))
+                .thenReturn(List.of(thirdTestUser));
+        when(userRepository.findByUsernameNot(eq(thirdTestUserName)))
+                .thenReturn(List.of(mainTestUser));
+
+        FriendJson friendJson = new FriendJson();
+        friendJson.setUsername(thirdTestUserName);
+
+        List<UserJson> result = testedObject.acceptInvitation(mainTestUserName, friendJson);
+
+        //Для проверки state между юзерами
+        List<UserJson> dimaFriends = testedObject.allUsers(mainTestUserName);
+        List<UserJson> emmaFriends = testedObject.allUsers(thirdTestUserName);
+
+        assertEquals(1, result.size(), "check size list");
+        assertEquals(FRIEND, result.get(0).getFriendState(), "check friend state");
+        assertEquals(emmaFriends.get(0).getFriendState(), FRIEND, "Emma check state");
+        assertEquals(dimaFriends.get(0).getFriendState(), INVITE_RECEIVED, "Dima check state");
+    }
+
+    @Test
+    void declineInvitationShouldReturnCorrectUpdateUsersList(@Mock UserRepository userRepository) {
+        currentUserWithInvitation();
+
+        testedObject = new UserDataService(userRepository);
+
+        when(userRepository.findByUsername(eq(mainTestUserName)))
+                .thenReturn(mainTestUser);
+        when(userRepository.findByUsername(eq(thirdTestUserName)))
+                .thenReturn(thirdTestUser);
+        when(userRepository.findByUsernameNot(eq(mainTestUserName)))
+                .thenReturn(List.of(thirdTestUser));
+        when(userRepository.findByUsernameNot(eq(thirdTestUserName)))
+                .thenReturn(List.of(mainTestUser));
+
+        FriendJson friendJson = new FriendJson();
+        friendJson.setUsername(thirdTestUserName);
+        List<UserJson> result = testedObject.declineInvitation(mainTestUserName, friendJson);
+
+        //Для проверки state между юзерами
+        List<UserJson> dimaFriends = testedObject.allUsers(mainTestUserName);
+        List<UserJson> emmaFriends = testedObject.allUsers(thirdTestUserName);
+
+        assertEquals(0, result.size(), "check size list");
+        assertNull(dimaFriends.get(0).getFriendState(), "Dima check remove state invites");
+        assertNull(emmaFriends.get(0).getFriendState(), "Emma check remove state invites");
+    }
+
+    @Test
+    void removeFriendShouldReturnCorrectUpdateUsersList(@Mock UserRepository userRepository) {
+        currentUserWithFriends();
+
+        testedObject = new UserDataService(userRepository);
+
+        when(userRepository.findByUsername(eq(mainTestUserName)))
+                .thenReturn(mainTestUser);
+        when(userRepository.findByUsername(eq(thirdTestUserName)))
+                .thenReturn(thirdTestUser);
+        when(userRepository.findByUsernameNot(eq(mainTestUserName)))
+                .thenReturn(List.of(thirdTestUser));
+        when(userRepository.findByUsernameNot(eq(thirdTestUserName)))
+                .thenReturn(List.of(mainTestUser));
+
+        List<UserJson> result = testedObject.removeFriend(mainTestUserName, thirdTestUserName);
+
+        //Для проверки state между юзерами
+        List<UserJson> dimaFriends = testedObject.allUsers(mainTestUserName);
+        List<UserJson> emmaFriends = testedObject.allUsers(thirdTestUserName);
+
+        assertEquals(1, result.size(), "check size list");
+        assertEquals(INVITE_SENT, result.get(0).getFriendState(), "check that the friend has been" +
+                " deleted and only the invitation remains");
+        assertNull(dimaFriends.get(0).getFriendState(), "Dima check remove state friend and invites");
+        assertNull(emmaFriends.get(0).getFriendState(), "Emma check remove state friend and invites");
+    }
+
+
     private UserEntity enrichTestUser() {
         mainTestUser.addFriends(true, secondTestUser);
         secondTestUser.addInvites(mainTestUser);
@@ -183,5 +320,25 @@ class UserDataServiceTest {
         thirdTestUser.addFriends(false, mainTestUser);
 
         return List.of(secondTestUser, thirdTestUser);
+    }
+
+    private void currentUserWithFriends() {
+        mainTestUser.addFriends(true, secondTestUser);
+        secondTestUser.addInvites(mainTestUser);
+
+        mainTestUser.addInvites(thirdTestUser);
+        mainTestUser.addFriends(false, thirdTestUser);
+        thirdTestUser.addInvites(mainTestUser);
+        thirdTestUser.addFriends(false, mainTestUser);
+    }
+
+    private void currentUserWithInvitation() {
+        thirdTestUser.addFriends(true, mainTestUser);
+        mainTestUser.addInvites(thirdTestUser);
+    }
+
+    private void currentUserWithReceivedInvitation() {
+        thirdTestUser.addFriends(true, mainTestUser);
+        mainTestUser.addInvites(thirdTestUser);
     }
 }
