@@ -47,7 +47,7 @@ class UserDataServiceTest {
     private UserEntity thirdTestUser;
 
 
-    private String notExistingUser = "not_existing_user";
+    private final String notExistingUser = "not_existing_user";
 
 
     @BeforeEach
