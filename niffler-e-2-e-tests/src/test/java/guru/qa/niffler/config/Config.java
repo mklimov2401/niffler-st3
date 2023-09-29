@@ -20,6 +20,10 @@ public interface Config {
 
     String nifflerAuthUrl();
 
+    String getCurrencyGrpcAddress();
+
+    int getCurrencyGrpcPort();
+
     default String databaseUser() {
         return "postgres";
     }
@@ -31,5 +35,6 @@ public interface Config {
     default int databasePort() {
         return 5432;
     }
+
 
 }
