@@ -2,6 +2,8 @@ package guru.qa.niffler.test.web;
 
 import guru.qa.niffler.jupiter.annotation.ApiLogin;
 import guru.qa.niffler.jupiter.annotation.DBUser;
+import guru.qa.niffler.jupiter.annotation.GenerateUser;
+import guru.qa.niffler.jupiter.annotation.IncomeInvitation;
 import org.junit.jupiter.api.Test;
 
 import static com.codeborne.selenide.Condition.visible;
@@ -10,8 +12,9 @@ import static com.codeborne.selenide.Selenide.*;
 
 public class LoginApiTest extends BaseWebTest {
 
-    @DBUser
-    @ApiLogin
+    @ApiLogin(
+            user = @GenerateUser
+    )
     @Test
     void mainPageShouldBeVisibleAfterLogin() {
         open(CFG.nifflerFrontUrl() + "/main");
