@@ -40,6 +40,11 @@ public class DockerConfig implements Config {
         return "http://auth.niffler.dc";
     }
 
+    @Override
+    public String nifflerUserDataUrl() {
+        return null;
+    }
+
 
     @Override
     public String getCurrencyGrpcAddress() {

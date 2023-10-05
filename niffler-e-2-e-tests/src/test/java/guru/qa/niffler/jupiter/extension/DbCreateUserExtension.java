@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static guru.qa.niffler.util.FakerUtils.generateRandomName;
+import static guru.qa.niffler.util.FakerUtils.generateRandomUsername;
 
 public class DbCreateUserExtension extends CreateUserExtension {
 
@@ -98,7 +98,7 @@ public class DbCreateUserExtension extends CreateUserExtension {
 
     private AuthUserEntity getAuthUserEntity() {
         AuthUserEntity authUser = new AuthUserEntity();
-        authUser.setUsername(generateRandomName());
+        authUser.setUsername(generateRandomUsername());
         authUser.setPassword(DEFAULT_PASSWORD);
         authUser.setEnabled(true);
         authUser.setAccountNonExpired(true);
