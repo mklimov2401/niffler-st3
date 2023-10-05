@@ -8,8 +8,10 @@ import java.util.List;
 public interface UserRepository {
 
     void createUserForTest(AuthUserEntity user);
+    void updateUserForTest(UserDataEntity user);
 
     void removeAfterTest(AuthUserEntity user);
 
     List<UserDataEntity> getUsersData(AuthUserEntity user);
+    UserDataEntity getUserData(AuthUserEntity user);
 }

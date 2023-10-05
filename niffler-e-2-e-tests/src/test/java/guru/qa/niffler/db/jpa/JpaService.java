@@ -15,6 +15,7 @@ public abstract class JpaService {
     }
 
     protected <T> void persist(T entity) {
+        System.out.println(entity);
         tx(em -> em.persist(entity));
     }
 

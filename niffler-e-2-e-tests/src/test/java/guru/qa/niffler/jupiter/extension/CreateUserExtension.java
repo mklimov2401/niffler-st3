@@ -10,7 +10,6 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,49 +21,49 @@ public abstract class CreateUserExtension implements BeforeEachCallback, Paramet
             OUTER = ExtensionContext.Namespace.create(GeneratedUser.Selector.OUTER);
 
     @Override
-    public void beforeEach(ExtensionContext extensionContext) throws Exception {
-        Map<GeneratedUser.Selector, GenerateUser> usersForTest = usersForTest(extensionContext);
-        for (Map.Entry<GeneratedUser.Selector, GenerateUser> entry : usersForTest.entrySet()) {
+    public void beforeEach(ExtensionContext context) {
+        Map<String, GenerateUser> usersForTest = usersForTest(context);
+        for (Map.Entry<String, GenerateUser> entry : usersForTest.entrySet()) {
             UserJson user = createUserForTest(entry.getValue());
-            user.setFriends(createFriendsIfPresent(entry.getValue()));
-            user.setIncomeInvitations(createIncomeInvitationsIfPresent(entry.getValue()));
-            user.setOutcomeInvitations(createOutcomeInvitationsIfPresent(entry.getValue()));
-            extensionContext.getStore(ExtensionContext.Namespace.create(entry.getKey()))
-                    .put(extensionContext.getUniqueId(), user);
+            user.setFriends(createFriendsIfPresent(entry.getValue(), user));
+            user.setIncomeInvitations(createIncomeInvitationsIfPresent(entry.getValue(), user));
+            user.setOutcomeInvitations(createOutcomeInvitationsIfPresent(entry.getValue(), user));
+            context.getStore(entry.getKey().contains(GeneratedUser.Selector.NESTED.name()) ? NESTED : OUTER)
+                    .put(context.getUniqueId(), user);
         }
     }
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext context) throws ParameterResolutionException {
         return parameterContext.getParameter().isAnnotationPresent(GeneratedUser.class) &&
                 parameterContext.getParameter().getType().isAssignableFrom(UserJson.class);
     }
 
     @Override
-    public UserJson resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+    public UserJson resolveParameter(ParameterContext parameterContext, ExtensionContext context) throws ParameterResolutionException {
         GeneratedUser generatedUser = parameterContext.getParameter().getAnnotation(GeneratedUser.class);
-        return extensionContext.getStore(ExtensionContext.Namespace.create(generatedUser.selector()))
-                .get(extensionContext.getUniqueId(), UserJson.class);
+        return context.getStore(ExtensionContext.Namespace.create(generatedUser.selector()))
+                .get(context.getUniqueId(), UserJson.class);
     }
 
     protected abstract UserJson createUserForTest(GenerateUser annotation);
 
-    protected abstract List<UserJson> createFriendsIfPresent(GenerateUser annotation);
+    protected abstract List<UserJson> createFriendsIfPresent(GenerateUser annotation, UserJson currentUser);
 
-    protected abstract List<UserJson> createIncomeInvitationsIfPresent(GenerateUser annotation);
+    protected abstract List<UserJson> createIncomeInvitationsIfPresent(GenerateUser annotation, UserJson currentUser);
 
-    protected abstract List<UserJson> createOutcomeInvitationsIfPresent(GenerateUser annotation);
+    protected abstract List<UserJson> createOutcomeInvitationsIfPresent(GenerateUser annotation, UserJson currentUser);
 
 
-    private Map<GeneratedUser.Selector, GenerateUser> usersForTest(ExtensionContext extensionContext) {
-        Map<GeneratedUser.Selector, GenerateUser> result = new HashMap<>();
-        ApiLogin apiLogin = extensionContext.getRequiredTestMethod().getAnnotation(ApiLogin.class);
+    private Map<String, GenerateUser> usersForTest(ExtensionContext context) {
+        Map<String, GenerateUser> result = new HashMap<>();
+        ApiLogin apiLogin = context.getRequiredTestMethod().getAnnotation(ApiLogin.class);
         if (apiLogin != null && apiLogin.user().handleAnnotation()) {
-            result.put(GeneratedUser.Selector.NESTED, apiLogin.user());
+            result.put(context.getUniqueId() + GeneratedUser.Selector.NESTED, apiLogin.user());
         }
-        GenerateUser outerUser = extensionContext.getRequiredTestMethod().getAnnotation(GenerateUser.class);
+        GenerateUser outerUser = context.getRequiredTestMethod().getAnnotation(GenerateUser.class);
         if (outerUser != null && outerUser.handleAnnotation()) {
-            result.put(GeneratedUser.Selector.OUTER, outerUser);
+            result.put(context.getUniqueId() + GeneratedUser.Selector.OUTER, outerUser);
         }
         return result;
     }

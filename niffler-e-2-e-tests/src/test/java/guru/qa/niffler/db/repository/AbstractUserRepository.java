@@ -24,6 +24,11 @@ public abstract class AbstractUserRepository implements UserRepository {
     }
 
     @Override
+    public void updateUserForTest(UserDataEntity user) {
+        udUserDAO.updateUserData(user);
+    }
+
+    @Override
     public void removeAfterTest(AuthUserEntity user) {
         UserDataEntity userInUd = udUserDAO.getUserData(user.getUsername());
         udUserDAO.deleteUserByUsernameInUserData(userInUd.getUsername());
@@ -40,5 +45,10 @@ public abstract class AbstractUserRepository implements UserRepository {
     @Override
     public List<UserDataEntity> getUsersData(AuthUserEntity user) {
         return udUserDAO.getUsersData(user.getUsername());
+    }
+
+    @Override
+    public UserDataEntity getUserData(AuthUserEntity user) {
+        return udUserDAO.getUserData(user.getUsername());
     }
 }
