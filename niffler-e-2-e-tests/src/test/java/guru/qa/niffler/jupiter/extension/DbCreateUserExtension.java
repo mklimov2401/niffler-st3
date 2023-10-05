@@ -6,7 +6,6 @@ import guru.qa.niffler.db.model.auth.AuthorityEntity;
 import guru.qa.niffler.db.model.userdata.UserDataEntity;
 import guru.qa.niffler.db.repository.UserRepository;
 import guru.qa.niffler.db.repository.UserRepositoryHibernate;
-import guru.qa.niffler.db.repository.UserRepositorySpringJdbc;
 import guru.qa.niffler.jupiter.annotation.Friend;
 import guru.qa.niffler.jupiter.annotation.GenerateUser;
 import guru.qa.niffler.jupiter.annotation.IncomeInvitation;
@@ -22,10 +21,11 @@ import static guru.qa.niffler.util.FakerUtils.generateRandomName;
 public class DbCreateUserExtension extends CreateUserExtension {
 
     private static final String DEFAULT_PASSWORD = "12345";
-    private final UserRepository userRepository = new UserRepositoryHibernate();
+    //private final UserRepository userRepository = new UserRepositoryHibernate();
 
     @Override
     protected UserJson createUserForTest(GenerateUser annotation) {
+        UserRepository userRepository = new UserRepositoryHibernate();
         AuthUserEntity authUser = getAuthUserEntity();
         userRepository.createUserForTest(authUser);
         UserJson result = UserJson.fromEntity(authUser);
@@ -35,6 +35,7 @@ public class DbCreateUserExtension extends CreateUserExtension {
 
     @Override
     protected List<UserJson> createFriendsIfPresent(GenerateUser annotation, UserJson currentUser) {
+        UserRepository userRepository = new UserRepositoryHibernate();
         Friend friends = annotation.friends();
         List<UserJson> userJsonList = new ArrayList<>();
         if (friends.handleAnnotation()) {
@@ -56,6 +57,7 @@ public class DbCreateUserExtension extends CreateUserExtension {
 
     @Override
     protected List<UserJson> createIncomeInvitationsIfPresent(GenerateUser annotation, UserJson currentUser) {
+        UserRepository userRepository = new UserRepositoryHibernate();
         IncomeInvitation incomeInvitation = annotation.incomeInvitations();
         List<UserJson> userJsonList = new ArrayList<>();
         if (incomeInvitation.handleAnnotation()) {
@@ -75,6 +77,7 @@ public class DbCreateUserExtension extends CreateUserExtension {
 
     @Override
     protected List<UserJson> createOutcomeInvitationsIfPresent(GenerateUser annotation, UserJson currentUser) {
+        UserRepository userRepository = new UserRepositoryHibernate();
         OutcomeInvitation outcomeInvitation = annotation.outcomeInvitations();
         List<UserJson> userJsonList = new ArrayList<>();
         if (outcomeInvitation.handleAnnotation()) {
@@ -110,6 +113,4 @@ public class DbCreateUserExtension extends CreateUserExtension {
                 }).toList()));
         return authUser;
     }
-
-
 }

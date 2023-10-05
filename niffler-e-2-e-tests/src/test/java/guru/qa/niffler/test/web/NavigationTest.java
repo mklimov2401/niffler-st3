@@ -2,6 +2,7 @@ package guru.qa.niffler.test.web;
 
 import guru.qa.niffler.jupiter.annotation.ApiLogin;
 import guru.qa.niffler.jupiter.annotation.DBUser;
+import guru.qa.niffler.jupiter.annotation.GenerateUser;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.NavigationPage;
 import org.junit.jupiter.api.Test;
@@ -13,8 +14,9 @@ public class NavigationTest extends BaseWebTest {
 
     private final NavigationPage nav = new NavigationPage();
 
-    @DBUser
-    @ApiLogin
+    @ApiLogin(
+            user = @GenerateUser
+    )
     @Test
     void goToFriendsPage() {
         loginPage.openMain();
@@ -23,8 +25,9 @@ public class NavigationTest extends BaseWebTest {
                 .checkingFreindsPage();
     }
 
-    @DBUser
-    @ApiLogin
+    @ApiLogin(
+            user = @GenerateUser
+    )
     @Test
     void goToAllPeoplePage() {
         loginPage.openMain();
@@ -33,8 +36,9 @@ public class NavigationTest extends BaseWebTest {
                 .checkingAllPeoplePage();
     }
 
-    @DBUser
-    @ApiLogin
+    @ApiLogin(
+            user = @GenerateUser
+    )
     @Test
     void goToProfilePage() {
         loginPage.openMain();
@@ -42,8 +46,9 @@ public class NavigationTest extends BaseWebTest {
                 .goToProfile()
                 .checkingProfilePage();
     }
-    @DBUser
-    @ApiLogin
+    @ApiLogin(
+            user = @GenerateUser
+    )
     @Test
     void goToMainPage() {
         loginPage.openMain();

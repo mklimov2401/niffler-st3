@@ -19,6 +19,6 @@ public class LoginApiTest extends BaseWebTest {
     void mainPageShouldBeVisibleAfterLogin() {
         open(CFG.nifflerFrontUrl() + "/main");
         $(".main-content__section-stats").shouldBe(visible);
-        sleep(4000);
+        //sleep(4000);
     }
 }

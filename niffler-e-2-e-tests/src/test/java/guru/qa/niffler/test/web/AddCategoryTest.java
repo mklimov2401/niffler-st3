@@ -2,6 +2,8 @@ package guru.qa.niffler.test.web;
 
 import guru.qa.niffler.jupiter.annotation.ApiLogin;
 import guru.qa.niffler.jupiter.annotation.DBUser;
+import guru.qa.niffler.jupiter.annotation.Friend;
+import guru.qa.niffler.jupiter.annotation.GenerateUser;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.NavigationPage;
 import guru.qa.niffler.page.ProfilePage;
@@ -15,8 +17,9 @@ public class AddCategoryTest extends BaseWebTest {
 
     private final ProfilePage profile = new ProfilePage();
 
-    @DBUser
-    @ApiLogin
+    @ApiLogin(
+            user = @GenerateUser
+    )
     @Test
     void addCategory() {
         String category = "Курсы";
