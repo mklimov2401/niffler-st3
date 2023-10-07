@@ -9,6 +9,9 @@ import guru.qa.niffler.config.Config;
 import guru.qa.niffler.db.model.auth.AuthUserEntity;
 import guru.qa.niffler.jupiter.annotation.ApiLogin;
 import guru.qa.niffler.jupiter.annotation.DBUser;
+import guru.qa.niffler.jupiter.annotation.GenerateUser;
+import guru.qa.niffler.jupiter.annotation.GeneratedUser;
+import guru.qa.niffler.model.UserJson;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -16,25 +19,26 @@ import org.openqa.selenium.Cookie;
 
 import java.io.IOException;
 
-import static guru.qa.niffler.jupiter.extension.DbUserExtension.NAMESPACE;
+import static guru.qa.niffler.jupiter.extension.CreateUserExtension.NESTED;
 
 public class ApiLoginExtension implements BeforeEachCallback, AfterTestExecutionCallback {
 
     private final AuthServiceClient authServiceClient = new AuthServiceClient();
 
     @Override
-    public void beforeEach(ExtensionContext context){
-        ApiLogin apiLogin = context.getRequiredTestMethod().getAnnotation(ApiLogin.class);
-        if (apiLogin != null) {
-            String username = apiLogin.username();
-            String password = apiLogin.password();
-            DBUser dbUser = context.getRequiredTestMethod().getAnnotation(DBUser.class);
-            if (dbUser != null || username.isEmpty() || password.isEmpty()) {
-                AuthUserEntity user = context.getStore(NAMESPACE).get(context.getUniqueId(), AuthUserEntity.class);
-                username = user.getUsername();
-                password = user.getPassword();
+    public void beforeEach(ExtensionContext extensionContext) {
+        ApiLogin annotation = extensionContext.getRequiredTestMethod().getAnnotation(ApiLogin.class);
+        if (annotation != null) {
+            GenerateUser user = annotation.user();
+            if (user.handleAnnotation()) {
+                UserJson createdUser = extensionContext.getStore(NESTED).get(
+                        extensionContext.getUniqueId(),
+                        UserJson.class
+                );
+                doLogin(createdUser.getUsername(), createdUser.getPassword());
+            } else {
+                doLogin(annotation.username(), annotation.password());
             }
-            doLogin(username, password);
         }
     }
 

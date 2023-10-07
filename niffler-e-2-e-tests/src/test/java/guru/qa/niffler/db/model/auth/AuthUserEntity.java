@@ -2,6 +2,7 @@ package guru.qa.niffler.db.model.auth;
 
 import guru.qa.niffler.db.model.CurrencyValues;
 import guru.qa.niffler.db.model.userdata.UserDataEntity;
+import guru.qa.niffler.model.UserJson;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -128,9 +129,34 @@ public class AuthUserEntity implements Cloneable{
         return userData;
     }
 
+    public UserDataEntity toUserDataEntity(){
+        UserDataEntity userData = new UserDataEntity();
+        userData.setUsername(this.username);
+        userData.setCurrency(CurrencyValues.RUB);
+        return userData;
+    }
+
+    public static AuthUserEntity fromUserJson(UserJson userJson) {
+        AuthUserEntity authUser = new AuthUserEntity();
+        authUser.setUsername(userJson.getUsername());
+        return authUser;
+    }
+
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
 
+    @Override
+    public String toString() {
+        return "AuthUserEntity{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", enabled=" + enabled +
+                ", accountNonExpired=" + accountNonExpired +
+                ", accountNonLocked=" + accountNonLocked +
+                ", credentialsNonExpired=" + credentialsNonExpired +
+                '}';
+    }
 }
