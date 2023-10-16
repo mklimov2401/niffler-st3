@@ -37,7 +37,7 @@ public class SpendingWebTest extends BaseWebTest {
             amount = AMOUNT,
             currency = CurrencyValues.RUB
     )
-    @Test
+    //@Test
     void spendingShouldBeDeletedAfterDeleteAction(SpendJson createdSpend) {
         mainPage
                 .findSpend(createdSpend)

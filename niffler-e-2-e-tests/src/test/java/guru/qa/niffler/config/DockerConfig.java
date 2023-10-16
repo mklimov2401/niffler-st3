@@ -1,13 +1,19 @@
 package guru.qa.niffler.config;
 
 import com.codeborne.selenide.Configuration;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 public class DockerConfig implements Config {
 
     static final DockerConfig config = new DockerConfig();
 
     static {
-        Configuration.remote = "http://localhost:4444/wd";
+        Configuration.browserSize = "1920x1200";
+        Configuration.remote = "http://selenoid:4444/wd/hub";
+        Configuration.timeout = 10000;
+        Configuration.browser = "chrome";
+        Configuration.browserVersion = "110.0";
+        Configuration.browserCapabilities = new ChromeOptions().addArguments("--no-sandbox");
     }
 
     private DockerConfig() {
@@ -15,7 +21,7 @@ public class DockerConfig implements Config {
 
     @Override
     public String baseUrl() {
-        return "frontend.niffler.dc";
+        return "http://frontend.niffler.dc";
     }
 
     @Override
@@ -31,24 +37,24 @@ public class DockerConfig implements Config {
 
     @Override
     public String nifflerSpendUrl() {
-        return "niffler-spend:8093";
+        return "http://spend.niffler.dc:8093/";
     }
 
 
     @Override
     public String nifflerAuthUrl() {
-        return "http://auth.niffler.dc";
+        return "http://auth.niffler.dc:9000";
     }
 
     @Override
     public String nifflerUserDataUrl() {
-        return null;
+        return "http://userdata.niffler.dc:8089/";
     }
 
 
     @Override
     public String getCurrencyGrpcAddress() {
-        return "niffler-currency";
+        return "currency.niffler.dc";
     }
 
     @Override
